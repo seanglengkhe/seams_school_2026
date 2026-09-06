@@ -1,19 +1,139 @@
-\documentclass{beamer}
+\documentclass[11pt, aspectratio=169]{beamer}
+\usetheme{metropolis}
+\usepackage[american]{babel}
+
+\usepackage{tikz}
+\usepackage{macros}
 
 
+%------------------------------------------------------------------------
+\title{\LARGE\textbf{Evolution Strategies, Covariance Adaptation and CMA-ES}}
+\institute{\bf SEAMS School 2026: Applying Mathematics to Real-World Applications \\
+          University of Science Ho Chi Minh, Vietnam}
 
-\title{Mini-project: Evolution Strategies, Covariance Adaptation and CMA-ES}
-\author{Seangleng Khe}
-\date{September 6, 2026}
+\author[Author names]{%
+    \parbox[t]{7cm}{%
+      \textbf{Optimization Team}\\
+      Seangleng Khe (KHM)\\
+      other names
+    }%
+    \parbox[t]{7cm}{%
+      \vspace{.45cm}
+      \textbf{Instructor} \\
+      Prof. Gaél Raoul 
+    }%
+}
+\date{\today}
+%------------------------------------------------------------------------
 
 \begin{document}
-\maketitle
+\begin{frame}[plain]
+  \maketitle
+\end{frame}
 
 
-\section{Objective}
+\section{Introduction}
+%-------------------------------------------------------------------------
+\begin{frame}
+  The objective of the study is to understand the progression 
 
-\fbox{random search}
+  \fbox{random search} $\to$ \fbox{evolution strategy} $\to$ \fbox{adaptive Gaussian search} $\to$ \fbox{CMA-ES}
+
+  After: we shall see how important it iss to adapt a full convariance matrix can make the algorithm nearly insensitive to rotations and anisotropic scalings of the search landscape.
+\end{frame}
+%-------------------------------------------------------------------------
+
 \section{Derivative-Free Optimization}
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  Let~$\domain\subset\Rn$ and~$\func:\domain\to\R$. 
+  We want to minimize the function~$\func$
+  \begin{align} \label{eq: opti}
+    \min_{\var\in\domain} \quad & \func(\var)
+  \end{align}
+  If~$\func$ is smooth (i.e., continuously differentiable) then to solve~\eqref{eq: opti}, we can use gradient desecent methods, such as steepest descent method or Newton-like methods, which can generally generate the solution by updating at each iterate
+  \begin{align*}
+    \var_{n+1}=\var_{n}-\step\grad\func(\var_{n})
+  \end{align*}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  We are here to answer three questions:
+  \begin{enumerate}
+    \item What information does a gradient use that a population-based methods does not have directly?
+      
+      \red{An} Gradient methods use the first-order derivative of the objective function.
+      The gradient provides the descent direction in the search process to obtain the minimizer which the population-based methods do not access.
+      Derivative-free methods evaluate the objective function values at the a set of candidate points and select the best that improves the function value.
+      These methods however, help us to do optimization with nonsmooth functions which is practical in real-world applications.
+
+    \item Why can derivative-free methods still recover perferred directions of descent?
+
+      \red{An} Yes, DFO can recover the descent direction even without gradient information.
+
+    \item What difficulties arise when $\dimension$ is large?
+  \end{enumerate}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+
+
+
+
 
 
 
