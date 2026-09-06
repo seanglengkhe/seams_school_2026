@@ -1,14 +1,22 @@
 \usepackage{amsmath, amssymb}
+\usepackage{tikz}
+\usepackage[ruled, vlined, linesnumbered]{algorithm2e}
 
 \newcommand{\dimension}{d}
 \newcommand{\red}{\textcolor{red}}
 \newcommand{\orange}{\textcolor{orange}}
 \newcommand{\func}{f}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\Rn}{\R^{n}}
+\newcommand{\Rn}{\R^{\dimension}}
 \newcommand{\domain}{D}
 \newcommand{\var}{x}
 \newcommand{\optimizer}{\var^{*}}
 \newcommand{\subjto}{\text{s.t.}}
 \newcommand{\grad}{\nabla}
-\newcommand{\step}{\eta}
+\newcommand{\step}{\alpha}
+\newcommand{\parent}{\mu}
+\newcommand{\offspring}{\lambda}
+\newcommand{\normal}{\mathcal{N}}
+\newcommand{\sample}{Z}
+\newcommand{\set}[1]{\left\{ #1 \right\}}
+\newcommand{\weight}{\omega}

@@ -2,9 +2,9 @@
 \usetheme{metropolis}
 \usepackage[american]{babel}
 
-\usepackage{tikz}
 \usepackage{macros}
 
+\DeclareMathOperator{\argmin}{\arg\min}
 
 %------------------------------------------------------------------------
 \title{\LARGE\textbf{Evolution Strategies, Covariance Adaptation and CMA-ES}}
@@ -66,25 +66,54 @@
   \begin{enumerate}
     \item What information does a gradient use that a population-based methods does not have directly?
       
-      \red{An} Gradient methods use the first-order derivative of the objective function.
+      \red{Ans} Gradient methods use the first-order derivative of the objective function.
       The gradient provides the descent direction in the search process to obtain the minimizer which the population-based methods do not access.
       Derivative-free methods evaluate the objective function values at the a set of candidate points and select the best that improves the function value.
       These methods however, help us to do optimization with nonsmooth functions which is practical in real-world applications.
 
     \item Why can derivative-free methods still recover perferred directions of descent?
 
-      \red{An} Yes, DFO can recover the descent direction even without gradient information.
-      To obtain so, DFO implicitly approximate the gradient-like information using te function values and they structure their search so that at least one trial direction is guaranteed to be descent direction.
+      \red{Ans} Yes, DFO can recover the descent direction even without gradient information.
+      To obtain so, DFO implicitly approximate the gradient-like information using the fitness values (function values) and they structure their search so that at least one trial direction is guaranteed to be descent direction.
 
     \item What difficulties arise when $\dimension$ is large?
+
+      \red{Ans} When the dimension~$\dimension$ is large, then the methods run into the curse of dimensionality.
+      The search space become exponentially large and the number of directions to explore grow so fast that it becomes computationally expensive or ineffective. (This happens to most if the optimization techniques.)
   \end{enumerate}
 \end{frame}
 %-------------------------------------------------------------------------
 
+\section{$(\parent,\offspring)$-ES}
 
 %-------------------------------------------------------------------------
 \begin{frame}
-  
+  In case of~$\parent=1$, the evolution strategy is the special case there is only parent in the sampling step of the sample.
+  % We have obtained the algorithm as below for such scenario:
+  \begin{algorithm}[H]
+    \caption{$(1,\offspring)$-ES Iteration Step}
+    \DontPrintSemicolon
+    \KwIn{A point $m_{n}\in\Rn$, step size~$\step>0$, population size~$\offspring$}
+    % \KwOut{Updates the next center~$m_{n+1}\in\Rn$}
+
+    \tcp{1. Sample offspring}
+    \For{$i\gets~1$ \KwTo~$\offspring$}{
+      Sample~$\sample_{i} \sim\normal(0,I_{\dimension})$\;
+      Compute~$X_{i}\gets m_{n} + \step\sample_{i}$ 
+      \tcp*{$X_{i}\sim\normal(m_{n},\step^{2})I_{\dimension}$}
+    }
+
+    \tcp{2. Evaluate}
+    Compute fitness value~$\func(X_{1}),\dots,\func(X_{\lambda})$\;
+
+    \tcp{3. Select the best} 
+    $i^{*}\gets\argmin_{i\in\set{1,\dots,\offspring}}\func(X_{i})$\;
+
+    \tcp{4. Update the center as the best candidate}
+    $m_{n+1}\gets X_{i^{*}}$\;
+
+    \Return{$m_{n+1}$}\;
+  \end{algorithm}
 \end{frame}
 %-------------------------------------------------------------------------
 
@@ -98,9 +127,35 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}
+  \small
+  A more stable version of the~$(\parent,\offspring)$-ES is given 
+  \begin{algorithm}[H]
+    \caption{$(\parent,\offspring)$-ES Iteration Step}
+    \DontPrintSemicolon
+    \KwIn{A point~$m_{n}\in\Rn$, step size~$\step>0$, population size~$\offspring$, number if selected parent~$\parent\le\offspring$, weighted factor~$\weight_{i}$ s.t.~$\sum_{i=1}^{\parent}\weight_{i}=1$.}
 
+    % \tcp{1. Sample} 
+    \For{$i\gets~1$ \KwTo~$\offspring$}{
+      $\sample_{i}\sim\normal(0,I_{\dimension})$ \;
+      $X_{i} = m_{n}+\step\sample_{i}$
+    }
+
+    % \tcp{2. Evaluate and rank} 
+    Compute~$\func(X_{i})$ and sort offspring by fitness:
+    \begin{align*}
+      X_{1:\offspring}, X_{2:\offspring}, \dots, X_{\offspring:\offspring},
+    \end{align*}
+    where~$X_{1:\offspring}$ is the best,~$X_{2:\offspring}$ is the second-best, and so on.
+
+    % \tcp{3. Weighted recombination} 
+    \begin{align*}
+      m_{n+1} = \sum_{i=1}^{\parent} \weight_{i}X_{i:\offspring}.
+    \end{align*}
+  \end{algorithm}
 \end{frame}
 %-------------------------------------------------------------------------
+
+
 
 
 %-------------------------------------------------------------------------
