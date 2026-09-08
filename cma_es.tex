@@ -122,18 +122,6 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}
-
-  \begin{figure}{h}
-    \centering 
-    \includegraphics[scale=0.4]{iso_vs_aniso.png}
-  \end{figure}
-
-\end{frame}
-%-------------------------------------------------------------------------
-
-
-%-------------------------------------------------------------------------
-\begin{frame}
   \small
   A more stable version of the~$(\parent,\offspring)$-ES is given 
   \begin{algorithm}[H]
@@ -162,7 +150,28 @@
 \end{frame}
 %-------------------------------------------------------------------------
 
+\section{Ill-Conditioned Quadratic}
 
+%-------------------------------------------------------------------------
+\begin{frame}{Anisotropric level set}
+
+  Anyway, when the objective function~$\func$ has anisotropic level set.
+  \begin{columns}
+    \begin{column}{.48\textwidth}
+      With covariance adaptation, we see that to obtain the solution it go through to the optimal solution.
+      While the isotropic search cannot. 
+      It more or less is taking a detour to obtain the solution.
+    \end{column}
+    \begin{column}{.48\textwidth}
+      \begin{figure}
+        \centering 
+        \includegraphics[scale=0.3]{iso_vs_aniso_copy.png}
+      \end{figure}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+%-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
