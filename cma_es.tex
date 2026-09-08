@@ -8,7 +8,7 @@
 \DeclareMathOperator{\argmin}{\arg\min}
 
 %------------------------------------------------------------------------
-\title{\LARGE\textbf{Evolution Strategies, Covariance Adaptation and CMA-ES}}
+\title{\LARGE\textbf{A Soft Introduction to CMA-ES Technique}}
 \institute{\bf SEAMS School 2026: Applying Mathematics to Real-World Applications \\
           University of Science Ho Chi Minh, Vietnam}
 
@@ -90,31 +90,40 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
   In case of~$\parent=1$, the evolution strategy is the special case there is only parent in the sampling step of the sample.
   % We have obtained the algorithm as below for such scenario:
   \begin{algorithm}[H]
     \caption{$(1,\offspring)$-ES Iteration Step}
     \DontPrintSemicolon
-    \KwIn{A point $m_{n}\in\Rn$, step size~$\step>0$, population size~$\offspring$}
+    \KwIn{A point $m_{0}\in\Rn$, step size~$\step>0$, population size~$\offspring$}
     % \KwOut{Updates the next center~$m_{n+1}\in\Rn$}
 
-    \tcp{1. Sample offspring}
-    \For{$i\gets~1$ \KwTo~$\offspring$}{
-      Sample~$\sample_{i} \sim\normal(0,I_{\dimension})$\;
-      Compute~$X_{i}\gets m_{n} + \step\sample_{i}$ 
-      \tcp*{$X_{i}\sim\normal(m_{n},\step^{2})I_{\dimension}$}
+    \For{$k\gets~1~\KwTo~n$}{
+      \For{i}{
+        % \tcp{1. Sample offspring}
+        \For{$i\gets~1$ \KwTo~$\offspring$}{
+          Sample~$\sample_{i} \sim\normal(0,I_{\dimension})$\;
+          Compute~$X_{i}\gets m_{0} + \step\sample_{i}$ 
+          \tcp*{$X_{i}\sim\normal(m_{0},\step^{2}I_{\dimension}$)}
+        }
+
+        % \tcp{2. Evaluate}
+        Compute fitness value~$\func(X_{1}),\dots,\func(X_{\lambda})$\;
+
+        % \tcp{3. Select the best} 
+        $i^{*}\gets\argmin_{i\in\set{1,\dots,\offspring}}\func(X_{i})$\;
+
+        % \tcp{4. Update the center as the best candidate}
+        $m_{k+1}\gets X_{i^{*}}$\;}
     }
-
-    \tcp{2. Evaluate}
-    Compute fitness value~$\func(X_{1}),\dots,\func(X_{\lambda})$\;
-
-    \tcp{3. Select the best} 
-    $i^{*}\gets\argmin_{i\in\set{1,\dots,\offspring}}\func(X_{i})$\;
-
-    \tcp{4. Update the center as the best candidate}
-    $m_{n+1}\gets X_{i^{*}}$\;
-
-    \Return{$m_{n+1}$}\;
+    \Return{$m_{n}$}\;
   \end{algorithm}
 \end{frame}
 %-------------------------------------------------------------------------
@@ -150,25 +159,58 @@
 \end{frame}
 %-------------------------------------------------------------------------
 
+
+%-------------------------------------------------------------------------
+\begin{frame}
+
+  \begin{figure}
+    \centering 
+    \includegraphics[width=.9\textwidth]{random_search_es.png}
+    \caption{Comparison between random search with uniform distribution and $(\parent,\offspring$)-ES.}
+  \end{figure}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
 \section{Ill-Conditioned Quadratic}
 
 %-------------------------------------------------------------------------
 \begin{frame}{Anisotropric level set}
-
-  Anyway, when the objective function~$\func$ has anisotropic level set.
   \begin{columns}
     \begin{column}{.48\textwidth}
-      With covariance adaptation, we see that to obtain the solution it go through to the optimal solution.
-      While the isotropic search cannot. 
-      It more or less is taking a detour to obtain the solution.
+      \begin{itemize}
+        \item With covariance adaptation, we see that to obtain the solution it go through to the optimal solution.
+        \item While the isotropic search cannot. 
+        It more or less is taking a detour to obtain the solution.
+        \item A central observation is that isotropic mutation is inefficient when the successful  search from a thin elongted ellipsoid.
+      \end{itemize}
     \end{column}
     \begin{column}{.48\textwidth}
       \begin{figure}
         \centering 
         \includegraphics[scale=0.3]{iso_vs_aniso_copy.png}
+        \caption{Function~$\func$ has anisotropic level set. (Steep valey in~$\var_{2}$ and flat in~$\var_{1}$).}
       \end{figure}
     \end{column}
   \end{columns}
+\centering{This leads us to \red{\bf\Large anisotropic search}.}
+
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}{Anisotropric search}
+
+  In stead of sampling from 
+  \begin{align*}
+    X \sim\normal(m,\step^{2} I),
+  \end{align*}
+  we consider the offspring of the form 
+  \begin{align*}
+    X \sim \normal(m,\step^{2}\covariance)
+  \end{align*}
+  where~$\covariance$ is symmetric positive definite.
 
 \end{frame}
 %-------------------------------------------------------------------------
@@ -181,25 +223,6 @@
 %-------------------------------------------------------------------------
 
 
-%-------------------------------------------------------------------------
-\begin{frame}
-
-\end{frame}
-%-------------------------------------------------------------------------
-
-
-%-------------------------------------------------------------------------
-\begin{frame}
-
-\end{frame}
-%-------------------------------------------------------------------------
-
-
-%-------------------------------------------------------------------------
-\begin{frame}
-
-\end{frame}
-%-------------------------------------------------------------------------
 
 
 
