@@ -4,6 +4,8 @@
 
 \usepackage{macros}
 \graphicspath{{./images/}}
+\metroset{block=fill}
+% \usepackage{emoji}
 
 \DeclareMathOperator{\argmin}{\arg\min}
 
@@ -14,7 +16,7 @@
 
 \author[Author names]{%
     \parbox[t]{7cm}{%
-      \textbf{Optimization Team}\\
+      \textbf{Optimization Algorithm Team}\\
       Seangleng Khe (KHM)\\
       other names
     }%
@@ -26,12 +28,14 @@
 }
 \date{\today}
 %------------------------------------------------------------------------
-
 \begin{document}
 \begin{frame}[plain]
   \maketitle
 \end{frame}
 
+\begin{frame}
+  \tableofcontents
+\end{frame}
 
 \section{Introduction}
 %-------------------------------------------------------------------------
@@ -44,7 +48,7 @@
 \end{frame}
 %-------------------------------------------------------------------------
 
-\section{Derivative-Free Optimization}
+\section{Optimization with Gradient Descents}
 
 %-------------------------------------------------------------------------
 \begin{frame}
@@ -53,11 +57,21 @@
   \begin{align} \label{eq: opti}
     \min_{\var\in\domain} \quad & \func(\var)
   \end{align}
-  If~$\func$ is smooth (i.e., continuously differentiable) then to solve~\eqref{eq: opti}, we can use gradient desecent methods, such as steepest descent method or Newton-like methods, which can generally generate the solution by updating at each iterate
+  If~$\func$ is smooth (i.e., continuously differentiable) then to solve~\eqref{eq: opti}, we can use gradient desecent methods which generate the solution by updating
   \begin{align*}
     \var_{n+1}=\var_{n}-\step\grad\func(\var_{n})
   \end{align*}
-  \centering{\red{\huge\bf Challenges: $\func$ is not differentiable!}}
+  \begin{block}{Search information}
+    The optimization algorithm uses gradient to go to the descent directions.
+  \end{block}
+  \vspace{.1cm}
+  \pause 
+  \centering{
+    \red{\huge\bf Challenge: $\func$ is not differentiable! \\
+    $\Downarrow$ \\
+    \huge\bf Derivative-Free Optimization}
+  }
+
 \end{frame}
 %-------------------------------------------------------------------------
 
@@ -86,14 +100,26 @@
 \end{frame}
 %-------------------------------------------------------------------------
 
-\section{$(\parent,\offspring)$-ES}
+\section{Random Search}
 
 %-------------------------------------------------------------------------
 \begin{frame}
+  If~$\func$ is differentaible, we reach the opitmizer based on the gradient information, now we don't have this information any more.
+  How can we reach the optimizer?
+  \begin{block}{Random Search}
+    Having a starting point~$m_{0}\then$ generate random points around~$m_{0} \then$ calculate the function values~$\func$
+  \end{block}
 
+  This is as stated " Finding a needle in an n-dimensional haystack" \cite{korn1966random,573b8afee53b4e0eb2b0ae1cbee23c59}.
+
+  % Random search has limitations on the fact that they cannot move the process systematically.
+  \begin{block}{Search information}
+    The optimization algorithm uses a set of randomly generated points based on probability distribution.
+    \end{block}
 \end{frame}
 %-------------------------------------------------------------------------
 
+\section{Evolution Strategy:~$(\parent,\offspring)$-ES}
 
 %-------------------------------------------------------------------------
 \begin{frame}
@@ -183,7 +209,7 @@
         \item With covariance adaptation, we see that to obtain the solution it go through to the optimal solution.
         \item While the isotropic search cannot. 
         It more or less is taking a detour to obtain the solution.
-        \item A central observation is that isotropic mutation is inefficient when the successful  search from a thin elongted ellipsoid.
+        \item A central observation is that isotropic mutation is inefficient when the successful  search from a thin elongated ellipsoid.
       \end{itemize}
     \end{column}
     \begin{column}{.48\textwidth}
@@ -194,6 +220,9 @@
       \end{figure}
     \end{column}
   \end{columns}
+  \begin{block}{Updated Search Information}
+    The optimization algorithm uses~$\offspring$ randomly generated points called \emph{offsprings} and selects~$\parent$ parents, recombine and repeat the process.
+  \end{block}
 \centering{This leads us to \red{\bf\Large anisotropic search}.}
 
 \end{frame}
@@ -213,17 +242,65 @@
   \end{align*}
   where~$\covariance$ is symmetric positive definite.
 
+  What does the covariance matrix~$\covariance$ do here?
 \end{frame}
 %-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
 \begin{frame}
+  A picture here similar to the one that prof explained in the first day.
 
+  The picture equals = 
+  \begin{itemize}
+    \item The matrix~$\covariance$ determines the shape of and orientation of the search disrtibution.
+    \item The idea of covariance is relatively simple: Directions in which successful stels have repeated ly occurred should receive larger variance in the future generations.
+  \end{itemize}
+  \begin{block}{Search directions}
+    The optimization algorithm learns  not only where to search thought the starting point~$m$ but also how to to search through~$\covariance$.
+  \end{block}
 \end{frame}
 %-------------------------------------------------------------------------
 
 
+%-------------------------------------------------------------------------
+\begin{frame}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \bibliographystyle{unsrtnat}
+  \bibliography{ref.bib}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \centering{\bf\Huge\orange{Thank you for your attentions!!!\\:-)}}
+  % \emoji{grinning-face}
+\end{frame}
+%-------------------------------------------------------------------------
 
 
 
