@@ -10,18 +10,18 @@
 \DeclareMathOperator{\argmin}{\arg\min}
 
 %------------------------------------------------------------------------
-\title{\LARGE\textbf{A Soft Introduction to CMA-ES Technique}}
+\title{\LARGE\textbf{A Soft Introduction to Covariance Matrix Adaptation Evolution Strategy (CMA-ES)}}
 \institute{\bf\large SEAMS School 2026: Applying Mathematics to Real-World Applications \\
           HO Chi Minh City University of Science, Vietnam}
 
 \author[Author names]{%
     \parbox[t]{7cm}{%
       \textbf{Optimization Algorithm Team}\\
-      Seangleng Khe (KHM) \\
-      Aphinan Photun (Thai) \\
-      Phoebe Jean Domen (Filipino)\\
-      Luong Minh Tuan (Viet) \\
-      Bui Huynh Xuan Quyen (Viet)\\
+      Seangleng Khe (Cam) \\
+      Aphinan Photun (Tha) \\
+      Phoebe Jean Domen (Fil)\\
+      Luong Minh Tuan (Vie) \\
+      Bui Huynh Xuan Quyen (Vie)\\
     }%
     \parbox[t]{7cm}{%
       \vspace{.45cm}
@@ -47,7 +47,9 @@
 
 \centering{\fbox{gradient descent} $\to$ \fbox{random search} $\to$ \fbox{evolution strategy} $\to$ \fbox{CMA-ES}}
 
-  After: we shall see how important it iss to adapt a full convariance matrix can make the algorithm nearly insensitive to rotations and anisotropic scalings of the search landscape.
+  After: we shall see how important it is to adapt a full convariance matrix can make the algorithm nearly insensitive to rotations and anisotropic scalings of the search landscape.
+
+  Modified Objective: \textbf{Visit CMA-ES}
 \end{frame}
 %-------------------------------------------------------------------------
 
@@ -74,7 +76,7 @@
     \end{column}
   \end{columns}
   \begin{block}{\red{Search information}}
-    The optimization algorithm uses gradient to search for the optimizer.
+    \red{GD} uses \blue{gradient information} to search for the optimizer.
   \end{block}
   % \vspace{.1cm}
   % \pause 
@@ -153,13 +155,15 @@
   \vspace{.4cm}
   
   \begin{block}{Random Search \footnote{\cite{573b8afee53b4e0eb2b0ae1cbee23c59}}}
-    With a starting point~$m_{0}\then$ generate random points around~$m_{0} \then$ calculate the function values~$\func$
+    With a starting point~$m\then$ generate random points around~$m \then$ calculate the function values~$\func$.
   \end{block}
 
   % Random search has limitations on the fact that they cannot move the process systematically.
   \begin{block}{\red{Search information}}
-    The optimization algorithm uses a set of randomly generated points based on probability distribution and calculate the fitness value (function value).
+    The \red{random search} uses a point~$m$ to generate \blue{random points} based on probability distribution and calculate \blue{the fitness value (function value)}.
   \end{block}
+
+  \textbf{Drawback: No directional learning/adaptation.}
 
   This is as stated " Finding a needle in an n-dimensional haystack " \footnote{\cite{korn1966random}}.
 \end{frame}
@@ -167,80 +171,89 @@
 
 \section{Evolution Strategy:~$(\parent,\offspring)$-ES}
 
+
 %-------------------------------------------------------------------------
 \begin{frame}
-  % In case of~$\parent=1$, the evolution strategy is the special case there is only parent in the sampling step of the sample.
-  % We have obtained the algorithm as below for such scenario:
-  \begin{algorithm}[H]
-    \caption{$(1,\offspring)$-ES Iteration: Isotropic Search}
-    \DontPrintSemicolon
-    \KwIn{A mean $m_{0}\in\Rn$, step size~$\step>0$, population size~$\offspring$}
-    % \KwOut{Updates the next center~$m_{n+1}\in\Rn$}
-
-    \For{$k\gets~1~\KwTo~n$}{
-      % \tcp{1. Sample offspring}
-      \For{$i\gets~1$ \KwTo~$\offspring$}{
-        Sample~$\sample_{i} \sim\normal(0,I_{\dimension})$\;
-        Compute~$X_{i}\gets m_{k} + \step\sample_{i}$ 
-        \tcp*{offsprings~$X_{i}\sim\normal(m_{0},\step^{2}I_{\dimension}$)}
-      }
-
-      % \tcp{2. Evaluate}
-      Compute function value~$\func(X_{1}),\dots,\func(X_{\lambda})$\;
-
-      % \tcp{3. Select the best} 
-      $i^{*}\gets\argmin_{i\in\set{1,\dots,\offspring}}\func(X_{i})$ \tcp{Choose one parent}\;
-
-      % \tcp{4. Update the center as the best candidate}
-      $m_{k+1}\gets X_{i^{*}}$\;
-    }
-    \Return{new mean $m_{n}$}\;
-  \end{algorithm}
+  \centering{\orange{\bf\huge A simulation is here!}}
 \end{frame}
 %-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
-\begin{frame}
-  \small
-  % A more stable version of the~$(\parent,\offspring)$-ES is given 
-  \begin{algorithm}[H]
-    \caption{$(\parent,\offspring)$-ES Iteration}
-    \DontPrintSemicolon
-    \KwIn{A point~$m_{0}\in\Rn$, step size~$\step>0$, population size~$\offspring$, number if selected parent~$\parent\le\offspring$, weighted factor~$\weight_{i}$ s.t.~$\sum_{i=1}^{\parent}\weight_{i}=1$.}
-
-    \For{$k\gets~1~\KwTo~n$}{
-      \For{$i\gets~1$ \KwTo~$\offspring$}{
-        $\sample_{i}\sim\normal(0,I_{\dimension})$ \;
-        $X_{i} = m_{k}+\step\sample_{i}$
-      }
-
-      % \tcp{2. Evaluate and rank} 
-      Compute~$\func(X_{i})$ and sort offspring by fitness:
-      \begin{align*}
-        X_{1:\offspring}, X_{2:\offspring}, \dots, X_{\offspring:\offspring},
-      \end{align*}
-      where~$X_{1:\offspring}$ is the best,~$X_{2:\offspring}$ is the second-best, and so on.
-
-      % \tcp{3. Weighted recombination} 
-      Choose~$\parent$ best candidates and recombinate
-      \begin{align*}
-        m_{n+1} = \sum_{i=1}^{\parent} \weight_{i}X_{i:\offspring}.
-      \end{align*}
-    }
-  \end{algorithm}
-\end{frame}
-%-------------------------------------------------------------------------
-
-
+% \begin{frame}
+%   % In case of~$\parent=1$, the evolution strategy is the special case there is only parent in the sampling step of the sample.
+%   % We have obtained the algorithm as below for such scenario:
+%   \begin{algorithm}[H]
+%     \caption{$(1,\offspring)$-ES Iteration: Isotropic Search}
+%     \DontPrintSemicolon
+%     \KwIn{A mean $m_{0}\in\Rn$, step size~$\step>0$, population size~$\offspring$}
+%     % \KwOut{Updates the next center~$m_{n+1}\in\Rn$}
+%
+%     \For{$k\gets~1~\KwTo~n$}{
+%       % \tcp{1. Sample offspring}
+%       \For{$i\gets~1$ \KwTo~$\offspring$}{
+%         Sample~$\sample_{i} \sim\normal(0,I_{\dimension})$\;
+%         Compute~$X_{i}\gets m_{k} + \step\sample_{i}$ 
+%         \tcp*{offsprings~$X_{i}\sim\normal(m_{0},\step^{2}I_{\dimension}$)}
+%       }
+%
+%       % \tcp{2. Evaluate}
+%       Compute function value~$\func(X_{1}),\dots,\func(X_{\lambda})$\;
+%
+%       % \tcp{3. Select the best} 
+%       $i^{*}\gets\argmin_{i\in\set{1,\dots,\offspring}}\func(X_{i})$ \tcp{Choose one parent}\;
+%
+%       % \tcp{4. Update the center as the best candidate}
+%       $m_{k+1}\gets X_{i^{*}}$\;
+%     }
+%     \Return{new mean $m_{n}$}\;
+%   \end{algorithm}
+% \end{frame}
+% %-------------------------------------------------------------------------
+%
+%
+% %-------------------------------------------------------------------------
+% \begin{frame}
+%   \small
+%   % A more stable version of the~$(\parent,\offspring)$-ES is given 
+%   \begin{algorithm}[H]
+%     \caption{$(\parent,\offspring)$-ES Iteration}
+%     \DontPrintSemicolon
+%     \KwIn{A point~$m_{0}\in\Rn$, step size~$\step>0$, population size~$\offspring$, number if selected parent~$\parent\le\offspring$, weighted factor~$\weight_{i}$ s.t.~$\sum_{i=1}^{\parent}\weight_{i}=1$.}
+%
+%     \For{$k\gets~1~\KwTo~n$}{
+%       \For{$i\gets~1$ \KwTo~$\offspring$}{
+%         $\sample_{i}\sim\normal(0,I_{\dimension})$ \;
+%         $X_{i} = m_{k}+\step\sample_{i}$
+%       }
+%
+%       % \tcp{2. Evaluate and rank} 
+%       Compute~$\func(X_{i})$ and sort offspring by fitness:
+%       \begin{align*}
+%         X_{1:\offspring}, X_{2:\offspring}, \dots, X_{\offspring:\offspring},
+%       \end{align*}
+%       where~$X_{1:\offspring}$ is the best,~$X_{2:\offspring}$ is the second-best, and so on.
+%
+%       % \tcp{3. Weighted recombination} 
+%       Choose~$\parent$ best candidates and recombinate
+%       \begin{align*}
+%         m_{n+1} = \sum_{i=1}^{\parent} \weight_{i}X_{i:\offspring}.
+%       \end{align*}
+%     }
+%   \end{algorithm}
+% \end{frame}
+% %-------------------------------------------------------------------------
+%
+%
 %-------------------------------------------------------------------------
 \begin{frame}{}
   {\bf\large Anisotropic Search}
-  \begin{block}{\red{Updated Search Information}}
-    The optimization algorithm uses the mean~$m$ generate to~$\offspring$ random points (called \emph{\blue{offsprings}}) and selects~$\parent$ points (called \emph{\blue{parents}}), recombine to generate a new points, and repeat the process.
+  \begin{block}{\red{Search Information}}
+    \red{$(\parent,\offspring)$-ES} uses a mean~$m$ generate to~\blue{$\offspring$ random points} (called \emph{offsprings}) and selects~\blue{$\parent$ points} (called \emph{parents}), \blue{recombine} to generate a \red{new mean}, and repeat the process.
   \end{block}
 \end{frame}
 %-------------------------------------------------------------------------
+
 
 %-------------------------------------------------------------------------
 \begin{frame}
@@ -254,7 +267,7 @@
 \end{frame}
 %-------------------------------------------------------------------------
 
-\section{Ill-Conditioned Quadratic}
+\section{Ill-Conditioned Problems}
 
 %-------------------------------------------------------------------------
 \begin{frame}{}
@@ -263,7 +276,7 @@
   \begin{columns}
     \begin{column}{.48\textwidth}
       \begin{itemize}
-        \item A central observation is that isotropic mutation is inefficient when the successful search directions from a thin elongated ellipsoid.
+        \item One observation is that the algorithm is inefficient when the successful search directions from a thin elongated ellipsoid.
       \end{itemize}
     % \centering{\includegraphics[scale=0.15]{aniso_works.png}}
     \end{column}
@@ -293,59 +306,176 @@
 
 
 %-------------------------------------------------------------------------
-\begin{frame}{Anisotropric search}
-
-  In stead of sampling from 
-  \begin{align*}
-    X \sim\normal(m,\step^{2} I),
-  \end{align*}
-  we consider the offspring of the form 
-  \begin{align*}
-    X \sim \normal(m,\step^{2}\covariance)
-  \end{align*}
-  where~$\covariance$ is symmetric positive definite.
-
-  What does the covariance matrix~$\covariance$ do here?
+\begin{frame}{}
+  \centering{\textbf{Drawback: \vspace{0.5cm} \\Have a direction, but ineffective with ill-conditioned problems.}}
 \end{frame}
 %-------------------------------------------------------------------------
 
+\section{Covariance Matrix Adaptation Evolution Strategy (CMA-ES)}
 
 %-------------------------------------------------------------------------
-\begin{frame}
-  A picture here similar to the one that prof explained in the first day.
-
-  The picture equals = 
-  \begin{itemize}
-    \item The matrix~$\covariance$ determines the shape of and orientation of the search disrtibution.
-    \item The idea of covariance is relatively simple: Directions in which successful steps have repeatedly occurred should receive larger variance in the future generations.
-  \end{itemize}
+\begin{frame}{}
   \begin{block}{\red{Search Information}}
-    The optimization algorithm learns not only where to search thought the starting point~$m$ but also how to to search through~$\covariance$.
+    \red{CMA-ES} = \blue{$(\parent,\offspring)$-ES} + learning/adaptation
   \end{block}
 \end{frame}
 %-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
-\begin{frame}
+\begin{frame}{}
+
+  \blue{$(\parent,\offspring)$-ES} generates points
+  \begin{align*}
+    X \sim\normal(m,\step^{2} \red{I}).
+  \end{align*}
+  \red{CMA-ES} generates points 
+  \begin{align*}
+    X \sim \normal(m,\step^{2}\red{\covariance})
+  \end{align*}
+  where~\blue{$\covariance$ is symmetric positive definite}.
+
+  \pause
+  \centering{\bf\huge\red{What does the covariance matrix~$\covariance$ do here?}}
 \end{frame}
 %-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
 \begin{frame}
+  \centering{\orange{\bf\huge A simulation is here!}}
 \end{frame}
 %-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
 \begin{frame}
+  \begin{columns}
+    \begin{column}{.48\textwidth}
+      \begin{itemize}
+        % \item The matrix~$\covariance$ determines the shape and orientation of the search distribution.
+        \item Directions in which successful steps have repeatedly occurred should receive larger variance in the future generations.
+      \end{itemize}
+    % \centering{\includegraphics[scale=0.15]{aniso_works.png}}
+    \end{column}
+    \begin{column}{.48\textwidth}
+      \begin{figure}
+        \centering 
+        \includegraphics[scale=0.15]{iso_not_work.png}
+        \caption{Function~$\func$ has anisotropic level set. (Steep valey in~$\var_{2}$ and flat in~$\var_{1}$).}
+      \end{figure}
+    \end{column}
+  \end{columns}
+  \begin{block}{\red{Search Information}}
+    \red{CMA-ES} {\bf learns} not only where to search thought \blue{the starting point~$m$} but also \blue{how to search} through~$\covariance$.
+  \end{block}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}{}
+  \red{\huge\bf What information that~$C$ gives?\footnote{\cite{aguirre2026covariance}}}
+  \vspace{2cm}
+  \begin{align*}
+    \blue{C_{n+1}} = (1-c_{\parent})\blue{C_{n}}+c_{\parent}\frac{1}{\step^{(i)^2}}C_{n+1}^{\parent}
+  \end{align*}
+  \end{frame}
+%-------------------------------------------------------------------------
+
+\addtocounter{framenumber}{-1}
+
+%-------------------------------------------------------------------------
+\begin{frame}{}
+  \red{\huge\bf What information that~$C$ gives?\footnote[4]{\cite{aguirre2026covariance}}}
+  \vspace{1.5cm}
+  \begin{align*}
+    \blue{C_{n+1}} = (\underbrace{1-c_{\parent}}_{\text{\red{learning rate}}})\blue{C_{n}}+c_{\parent}\frac{1}{\step^{(i)^2}}\underbrace{C_{n+1}^{\parent}}_{\substack{\text{\red{reproduce the}}\\ \text{\red{best candidates}}}}
+  \end{align*}
+  \end{frame}
+%-------------------------------------------------------------------------
+
+\addtocounter{framenumber}{-1}
+
+%-------------------------------------------------------------------------
+\begin{frame}{}
+  \red{\huge\bf What information that~$C$ gives?\footnote[4]{\cite{aguirre2026covariance}}}
+  \vspace{1.5cm}
+  \begin{align*}
+    \underbrace{\blue{C_{n+1}} = (\underbrace{1-c_{\parent}}_{\text{\red{learning rate }}})\blue{C_{n}}+c_{\parent}\frac{1}{\step^{(i)^2}}\underbrace{C_{n+1}^{\parent}}_{\substack{\text{\red{reproduce the}}\\ \text{\red{best candidates}}}}}_{\text{\red{memory process}}}
+  \end{align*}
+  \end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \red{\huge\bf There's something more...}
+
+  We can control the step size~$\blue{\step}$\footnote[4]{\cite{aguirre2026covariance}}
+
+  \begin{align*}
+    \ln\blue{\step_{n+1}} = \ln\blue{\step_{n}} + \frac{c_{\step}}{d_{\step}}\left( \frac{\norm{p_{n+1}^{\step}}}{E\norm{\normal(0,I)}}-1\right)
+  \end{align*}
+\end{frame}
+%-------------------------------------------------------------------------
+
+\addtocounter{framenumber}{-1}
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \red{\huge\bf There's something more...}
+
+  We can control the step size~$\blue{\step}$\footnote[4]{\cite{aguirre2026covariance}}
+
+  \begin{align*}
+    \ln\blue{\step_{n+1}} = \ln\blue{\step_{n}} + \frac{c_{\step}}{d_{\step}}\left( \underbrace{\frac{\norm{p_{n+1}^{\step}}}{E\norm{\normal(0,I)}}-1}_{\red{!!!}}\right)
+  \end{align*}
+\end{frame}
+%-------------------------------------------------------------------------
+
+\addtocounter{framenumber}{-1}
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \red{\huge\bf There's something more...}
+
+  We can control the step size~$\blue{\step}$\footnote[4]{\cite{aguirre2026covariance}}
+
+  \begin{align*}
+    \underbrace{\ln\blue{\step_{n+1}} = \ln\blue{\step_{n}} + \frac{c_{\step}}{d_{\step}}\left( \underbrace{\frac{\norm{p_{n+1}^{\step}}}{E\norm{\normal(0,I)}}-1}_{\red{!!!}}\right)}_{\text{\red{memory process}}}
+  \end{align*}
 \end{frame}
 %-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
 \begin{frame}
+  \centering{\huge\bf The End of CMA-ES!!!}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \begin{figure}[h]
+    \begin{tikzpicture}[
+      box/.style = { 
+        rectangle, 
+        draw = teal!35,
+        text width = 3.5cm, 
+        line width =1pt,
+        rounded corners
+      }]
+      \node (GBO) [box] {Gradient-based Opt.};
+      \node (GD) [box, below of=GBO, xshift=4cm] {Gradient Descent};
+      \node (DFO) [box, below of=GD, xshift=-.5cm] {Derivative-Free Opt.};
+      \node (RS) [box, below of=GD,yshift=-.3cm] {Random Search};
+      \node (ES) [box, below of=RS] {Evolution Strategy};
+      \node (CMA) [box, below of=ES] {CMA-ES};
+
+    \end{tikzpicture}
+  \end{figure}
 \end{frame}
 %-------------------------------------------------------------------------
 
