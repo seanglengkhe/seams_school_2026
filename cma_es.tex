@@ -149,6 +149,9 @@
 \begin{frame}
   % If~$\func$ is differentaible, we reach the opitmizer based on the gradient information, now we don't have this information any more.
   \centering{\red{\huge How can we reach the optimizer?}}
+  
+  \vspace{.4cm}
+  
   \begin{block}{Random Search \footnote{\cite{573b8afee53b4e0eb2b0ae1cbee23c59}}}
     With a starting point~$m_{0}\then$ generate random points around~$m_{0} \then$ calculate the function values~$\func$
   \end{block}
@@ -163,13 +166,6 @@
 %-------------------------------------------------------------------------
 
 \section{Evolution Strategy:~$(\parent,\offspring)$-ES}
-
-%-------------------------------------------------------------------------
-\begin{frame}
-  From random search, we can 
-\end{frame}
-%-------------------------------------------------------------------------
-
 
 %-------------------------------------------------------------------------
 \begin{frame}
@@ -241,7 +237,7 @@
 \begin{frame}{}
   {\bf\large Anisotropic Search}
   \begin{block}{\red{Updated Search Information}}
-    The optimization algorithm a starting point~$m$ to~$\offspring$ randomly generated points (called \emph{offsprings}) and selects~$\parent$ points (called \emph{parents}), recombine to generate a new points, and repeat the process.
+    The optimization algorithm uses the mean~$m$ generate to~$\offspring$ random points (called \emph{\blue{offsprings}}) and selects~$\parent$ points (called \emph{\blue{parents}}), recombine to generate a new points, and repeat the process.
   \end{block}
 \end{frame}
 %-------------------------------------------------------------------------
@@ -262,16 +258,14 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}{}
-
+  \vspace{.3cm}
   \textbf{\huge$(\parent,\lambda)$-ES is not enough...}
-
   \begin{columns}
     \begin{column}{.48\textwidth}
       \begin{itemize}
-        \item It more or less is taking a detour to obtain the solution.
-        \item A central observation is that isotropic mutation is inefficient when the successful  search from a thin elongated ellipsoid.
+        \item A central observation is that isotropic mutation is inefficient when the successful search directions from a thin elongated ellipsoid.
       \end{itemize}
-    \centering{\includegraphics[scale=0.15]{aniso_works.png}}
+    % \centering{\includegraphics[scale=0.15]{aniso_works.png}}
     \end{column}
     \begin{column}{.48\textwidth}
       \begin{figure}
@@ -287,7 +281,13 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}
-  \includegraphics[scale=0.3]{aniso_works.png}
+  \vspace{.3cm}
+  \red{\huge\bf Preferable search trajectory}
+  \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.3]{aniso_works.png}
+  \end{figure}
+
 \end{frame}
 %-------------------------------------------------------------------------
 
