@@ -12,7 +12,7 @@
 %------------------------------------------------------------------------
 \title{\LARGE\textbf{A Soft Introduction to CMA-ES Technique}}
 \institute{\bf\large SEAMS School 2026: Applying Mathematics to Real-World Applications \\
-          University of Science Ho Chi Minh, Vietnam}
+          HO Chi Minh City University of Science, Vietnam}
 
 \author[Author names]{%
     \parbox[t]{7cm}{%
@@ -21,7 +21,7 @@
       Aphinan Photun (Thai) \\
       Phoebe Jean Domen (Filipino)\\
       Luong Minh Tuan (Viet) \\
-      Quyen Bui Huynh Xuan (Viet)\\
+      Bui Huynh Xuan Quyen (Viet)\\
     }%
     \parbox[t]{7cm}{%
       \vspace{.45cm}
@@ -238,7 +238,8 @@
 
 
 %-------------------------------------------------------------------------
-\begin{frame}{Anisotropric level set}
+\begin{frame}{}
+  {\bf\large Anisotropic Search}
   \begin{block}{\red{Updated Search Information}}
     The optimization algorithm a starting point~$m$ to~$\offspring$ randomly generated points (called \emph{offsprings}) and selects~$\parent$ points (called \emph{parents}), recombine to generate a new points, and repeat the process.
   \end{block}
@@ -260,24 +261,33 @@
 \section{Ill-Conditioned Quadratic}
 
 %-------------------------------------------------------------------------
-\begin{frame}{Anisotropric level set}
+\begin{frame}{}
+
+  \textbf{\huge$(\parent,\lambda)$-ES is not enough...}
+
   \begin{columns}
     \begin{column}{.48\textwidth}
       \begin{itemize}
-        \item With covariance adaptation, we see that to obtain the solution it go through to the optimal solution.
-        \item While the isotropic search cannot. 
-        It more or less is taking a detour to obtain the solution.
+        \item It more or less is taking a detour to obtain the solution.
         \item A central observation is that isotropic mutation is inefficient when the successful  search from a thin elongated ellipsoid.
       \end{itemize}
+    \centering{\includegraphics[scale=0.15]{aniso_works.png}}
     \end{column}
     \begin{column}{.48\textwidth}
       \begin{figure}
         \centering 
-        \includegraphics[scale=0.3]{iso_vs_aniso_copy.png}
+        \includegraphics[scale=0.15]{iso_not_work.png}
         \caption{Function~$\func$ has anisotropic level set. (Steep valey in~$\var_{2}$ and flat in~$\var_{1}$).}
       \end{figure}
     \end{column}
   \end{columns}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \includegraphics[scale=0.3]{aniso_works.png}
 \end{frame}
 %-------------------------------------------------------------------------
 
