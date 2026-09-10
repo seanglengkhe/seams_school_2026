@@ -11,7 +11,7 @@
 
 %------------------------------------------------------------------------
 \title{\LARGE\textbf{A Soft Introduction to CMA-ES Technique}}
-\institute{\bf SEAMS School 2026: Applying Mathematics to Real-World Applications \\
+\institute{\bf\large SEAMS School 2026: Applying Mathematics to Real-World Applications \\
           University of Science Ho Chi Minh, Vietnam}
 
 \author[Author names]{%
@@ -23,7 +23,7 @@
     \parbox[t]{7cm}{%
       \vspace{.45cm}
       \textbf{Instructor} \\
-      Prof. Gaél Raoul 
+      Prof. Gaël Raoul 
     }%
 }
 \date{\today}
@@ -64,49 +64,72 @@
   \begin{block}{Search information}
     The optimization algorithm uses gradient to go to the descent directions.
   \end{block}
-  \vspace{.1cm}
-  \pause 
-  \centering{
-    \red{\huge\bf Challenge: $\func$ is not differentiable! \\
-    $\Downarrow$ \\
-    \huge\bf Derivative-Free Optimization}
-  }
-
+  % \vspace{.1cm}
+  % \pause 
+  % \centering{
+  %   \red{\huge\bf Challenge: $\func$ is not differentiable! \\
+  %   $\Downarrow$ \\
+  %   \huge\bf Derivative-Free Optimization}
+  % }
 \end{frame}
 %-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
 \begin{frame}
-  We are here to answer three questions:
-  \begin{enumerate}
-    \item What information does a gradient use that a population-based methods does not have directly?
-      
-      \red{Ans} Gradient methods use the first-order derivative of the objective function.
-      The gradient provides the descent direction in the search process to obtain the minimizer which the population-based methods do not access.
-      Derivative-free methods evaluate the objective function values at the a set of candidate points and select the best that improves the function value.
-      These methods however, help us to do optimization with nonsmooth functions which is practical in real-world applications.
-
-    \item Why can derivative-free methods still recover perferred directions of descent?
-
-      \red{Ans} Yes, DFO can recover the descent direction even without gradient information.
-      To obtain so, DFO implicitly approximate the gradient-like information using the fitness values (function values) and they structure their search so that at least one trial direction is guaranteed to be descent direction.
-
-    \item What difficulties arise when $\dimension$ is large?
-
-      \red{Ans} When the dimension~$\dimension$ is large, then the methods run into the curse of dimensionality.
-      The search space become exponentially large and the number of directions to explore grow so fast that it becomes computationally expensive or ineffective. (This happens to most if the optimization techniques.)
-  \end{enumerate}
+  \begin{columns}
+    \begin{column}{.48\textwidth}
+      \centering{
+        \red{\huge\bf $\func$ is differentiable \\
+          $\Downarrow$ \\
+        \huge\bf Gradient/Derivatives}
+      }
+    \end{column}
+    \begin{column}{.48\textwidth}
+    \pause
+      \centering{
+        \red{\huge\bf "$\func$ is not differentiable!" \\
+          $\Downarrow?$ \\
+          \pause
+        \huge\bf Derivative-Free Optimization}
+      }
+    \end{column}
+  \end{columns}
 \end{frame}
 %-------------------------------------------------------------------------
+
+
+%%-------------------------------------------------------------------------
+% \begin{frame}
+%   We are here to answer three questions:
+%   \begin{enumerate}
+%     \item What information does a gradient use that a population-based methods does not have directly?
+%
+%       \red{Ans} Gradient methods use the first-order derivative of the objective function.
+%       The gradient provides the descent direction in the search process to obtain the minimizer which the population-based methods do not access.
+%       Derivative-free methods evaluate the objective function values at the a set of candidate points and select the best that improves the function value.
+%       These methods however, help us to do optimization with nonsmooth functions which is practical in real-world applications.
+%
+%     \item Why can derivative-free methods still recover perferred directions of descent?
+%
+%       \red{Ans} Yes, DFO can recover the descent direction even without gradient information.
+%       To obtain so, DFO implicitly approximate the gradient-like information using the fitness values (function values) and they structure their search so that at least one trial direction is guaranteed to be descent direction.
+%
+%     \item What difficulties arise when $\dimension$ is large?
+%
+%       \red{Ans} When the dimension~$\dimension$ is large, then the methods run into the curse of dimensionality.
+%       The search space become exponentially large and the number of directions to explore grow so fast that it becomes computationally expensive or ineffective. (This happens to most if the optimization techniques.)
+%   \end{enumerate}
+% \end{frame}
+% %-------------------------------------------------------------------------
 
 \section{Random Search}
 
 %-------------------------------------------------------------------------
 \begin{frame}
-  If~$\func$ is differentaible, we reach the opitmizer based on the gradient information, now we don't have this information any more.
-  How can we reach the optimizer?
-  \begin{block}{Random Search}
+  % If~$\func$ is differentaible, we reach the opitmizer based on the gradient information, now we don't have this information any more.
+  \centering{\red{\large How can we reach the optimizer?}}
+  \begin{block}{Random Search \footnote{\cite{573b8afee53b4e0eb2b0ae1cbee23c59}}}
     Having a starting point~$m_{0}\then$ generate random points around~$m_{0} \then$ calculate the function values~$\func$
   \end{block}
 
