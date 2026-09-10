@@ -42,7 +42,7 @@
 \begin{frame}
   The objective of the study is to understand the progression 
 
-  \fbox{random search} $\to$ \fbox{evolution strategy} $\to$ \fbox{adaptive Gaussian search} $\to$ \fbox{CMA-ES}
+\centering{\fbox{gradient descent} $\to$ \fbox{random search} $\to$ \fbox{evolution strategy} $\to$ \fbox{CMA-ES}}
 
   After: we shall see how important it iss to adapt a full convariance matrix can make the algorithm nearly insensitive to rotations and anisotropic scalings of the search landscape.
 \end{frame}
@@ -52,16 +52,25 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}
-  Let~$\domain\subset\Rn$ and~$\func:\domain\to\R$. 
-  We want to minimize the function~$\func$
-  \begin{align} \label{eq: opti}
+  Suppose we want to solve
+  \begin{align*} \label{eq: opti}
     \min_{\var\in\domain} \quad & \func(\var)
-  \end{align}
-  If~$\func$ is smooth (i.e., continuously differentiable) then to solve~\eqref{eq: opti}, we can use gradient desecent methods which generate the solution by updating
-  \begin{align*}
-    \var_{n+1}=\var_{n}-\step\grad\func(\var_{n})
   \end{align*}
-  \begin{block}{Search information}
+  % \centering{\includegraphics[scale=.2]{gradient_direction.png}}
+  %
+  %   If~$\func$ is \blue{smooth}, we use gradient information~$\var_{n+1}=\var_{n}-\step\grad\func(\var_{n}) $
+  \begin{columns}
+    \begin{column}{.3\textwidth}
+      If~$\func$ is \blue{smooth}, we use \blue{gradient information}
+      \begin{align*}
+        \var_{n+1}=\var_{n}-\step\grad\func(\var_{n})
+      \end{align*}
+    \end{column}
+    \begin{column}{.6\textwidth}
+      \includegraphics[scale=.2]{gradient_direction.png}
+    \end{column}
+  \end{columns}
+  \begin{block}{\red{Search information}}
     The optimization algorithm uses gradient to go to the descent directions.
   \end{block}
   % \vspace{.1cm}
@@ -77,24 +86,28 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}
-  \begin{columns}
-    \begin{column}{.48\textwidth}
-      \centering{
-        \red{\huge\bf $\func$ is differentiable \\
-          $\Downarrow$ \\
-        \huge\bf Gradient/Derivatives}
-      }
-    \end{column}
-    \begin{column}{.48\textwidth}
-    \pause
-      \centering{
-        \red{\huge\bf "$\func$ is not differentiable!" \\
-          $\Downarrow?$ \\
-          \pause
-        \huge\bf Derivative-Free Optimization}
-      }
-    \end{column}
-  \end{columns}
+  \centering{\includegraphics[scale=.35]{rugged_landscape_5d.png}}
+  % \begin{columns}
+  %   \begin{column}{.48\textwidth}
+  %     % \centering{
+  %     %   \red{\huge\bf $\func$ is differentiable \\
+  %     %     $\Downarrow$ \\
+  %     %   \huge\bf Gradient/Derivatives}
+  %     % }
+  %     \includegraphics[scale=.4]{parobola.png}
+  %     \centering{\blue{gradient}}
+  %   \end{column}
+  %   \begin{column}{.48\textwidth}
+  %   \pause
+  %     % \centering{
+  %     %   \red{\huge\bf "$\func$ is not differentiable!" \\
+  %     %     $\Downarrow?$ \\
+  %     %     \pause
+  %     %   \huge\bf Derivative-Free Optimization}
+  %     % }
+  %     \includegraphics[scale=.2]{rugged_landscape_5d.png}
+  %   \end{column}
+  % \end{columns}
 \end{frame}
 %-------------------------------------------------------------------------
 
@@ -133,7 +146,7 @@
     Having a starting point~$m_{0}\then$ generate random points around~$m_{0} \then$ calculate the function values~$\func$
   \end{block}
 
-  This is as stated " Finding a needle in an n-dimensional haystack" \cite{korn1966random,573b8afee53b4e0eb2b0ae1cbee23c59}.
+  This is as stated " Finding a needle in an n-dimensional haystack" \footnote{\cite{korn1966random}}.
 
   % Random search has limitations on the fact that they cannot move the process systematically.
   \begin{block}{Search information}
