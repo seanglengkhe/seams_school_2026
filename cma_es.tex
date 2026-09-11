@@ -316,7 +316,7 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}{}
-  \begin{block}{\red{Search Information}}
+  \begin{block}{\red{Search Information (Expected)}}
     \red{CMA-ES} = \blue{$(\parent,\offspring)$-ES} + learning/adaptation
   \end{block}
 \end{frame}
@@ -460,48 +460,6 @@
       \node (empty) [rectangle] {\huge\bf The End of CMA-ES!!!};
       \pause
       \node [rectangle, below of=empty, xshift=5cm, yshift=-2cm] {... from me};
-    \end{tikzpicture}
-  \end{figure}
-\end{frame}
-%-------------------------------------------------------------------------
-
-
-%-------------------------------------------------------------------------
-\begin{frame}
-  \vspace{.4cm}
-  \begin{figure}[h]
-    \begin{tikzpicture}[
-      box/.style = { 
-        rectangle, 
-        draw = teal!35,
-        text width = 3.5cm, 
-        line width =1pt,
-        rounded corners
-      },
-      arrow/.style = {
-        thick,
-        <-, 
-        >=stealth
-      }]
-      \node (frame) [rectangle, text width=3.8cm, draw=red, xshift=4cm, yshift=-2cm, minimum height=6cm, line width=1pt] {};
-      \node [box, dashed, below of=frame, red, yshift=-2.5cm] {Presented Methods};
-      \node (GBO) [box, orange, yshift=1.5cm] {Gradient-based Opt.};
-      \node (GD) [box, below of=GBO, xshift=4cm, draw=red] {Gradient Methods};
-      \node (GD detailed) [box, right of=GD, xshift=3.6cm] {gradient/derivative};
-      \node (DFO) [box, below of=GD, xshift=-4cm, orange] {Derivative-Free Opt.};
-      \node (RS) [box, below of=DFO, xshift=4cm, yshift=-.3cm, draw=red] {Random Search};
-      \node (RS detailed) [box, right of=RS, xshift=4cm, text width =4.3cm] {generate random points};
-      \node (ES) [box, below of=RS, yshift=-.2cm, draw=red] {$(\parent,\offspring)$-ES};
-      \node (ES detailed) [box, right of=ES, xshift=3.6cm] {random search + repeatition};
-      \node (CMA) [box, below of=ES, yshift=-.4cm, draw=red] {CMA-ES};
-      \node (CMA detailed) [box, right of=CMA, xshift=4cm, text width=4.5cm] {learning/adaptation (non-trivial};
-
-      \draw [arrow] (GD) -- (GD detailed);
-      \draw [arrow] (RS) -- (RS detailed);
-      \draw [arrow] (ES) -- (ES detailed);
-      \draw [arrow] (CMA) -- (CMA detailed);
-
-      \node (pic) at (0,-3) {\includegraphics[scale=.14]{rugged_landscape_5d.png}};
     \end{tikzpicture}
   \end{figure}
 \end{frame}
@@ -669,6 +627,49 @@
         \end{itemize}
     \end{block}
 \end{frame}
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \vspace{.4cm}
+  \begin{figure}[h]
+    \begin{tikzpicture}[
+      box/.style = { 
+        rectangle, 
+        draw = teal!35,
+        text width = 3.5cm, 
+        line width =1pt,
+        rounded corners
+      },
+      arrow/.style = {
+        thick,
+        <-, 
+        >=stealth
+      }]
+      \node (frame) [rectangle, text width=3.8cm, draw=red, xshift=4cm, yshift=-2cm, minimum height=6cm, line width=1pt] {};
+      \node (methods) [box, dashed, below of=frame, red, yshift=-2.5cm] {Presented Methods};
+      \node (GBO) [box, orange, yshift=1.5cm] {Gradient-based Opt.};
+      \node (GD) [box, below of=GBO, xshift=4cm, draw=red] {Gradient Methods};
+      \node (GD detailed) [box, right of=GD, xshift=3.6cm] {gradient/derivative};
+      \node (DFO) [box, below of=GD, xshift=-4cm, orange] {Derivative-Free Opt.};
+      \node (RS) [box, below of=DFO, xshift=4cm, yshift=-.3cm, draw=red] {Random Search};
+      \node (RS detailed) [box, right of=RS, xshift=4cm, text width =4.3cm] {generate random points};
+      \node (ES) [box, below of=RS, yshift=-.2cm, draw=red] {$(\parent,\offspring)$-ES};
+      \node (ES detailed) [box, right of=ES, xshift=3.6cm] {random search + repeatition};
+      \node (CMA) [box, below of=ES, yshift=-.4cm, draw=red] {CMA-ES};
+      \node (CMA detailed) [box, right of=CMA, xshift=4cm, text width=4.5cm] {learning/adaptation (non-trivial};
+
+      \draw [arrow] (GD) -- (GD detailed);
+      \draw [arrow] (RS) -- (RS detailed);
+      \draw [arrow] (ES) -- (ES detailed);
+      \draw [arrow] (CMA) -- (CMA detailed);
+
+      \node (pic) at (0,-3) {\includegraphics[scale=.14]{rugged_landscape_5d.png}};
+      \node [box, right of=methods, xshift=3.5cm, draw=red, yshift=-.3cm] {\textbf{+Convergene and Comparison}};
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+%-------------------------------------------------------------------------
+
 
 %-------------------------------------------------------------------------
 \begin{frame}
