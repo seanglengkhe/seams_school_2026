@@ -11,6 +11,7 @@
 
 %------------------------------------------------------------------------
 \title{\LARGE\textbf{A Soft Introduction to Covariance Matrix Adaptation Evolution Strategy (CMA-ES)}}
+\subtitle{From Gradient Descents to CMA-ES}
 \institute{\bf\large SEAMS School 2026: Applying Mathematics to Real-World Applications \\
           HO Chi Minh City University of Science, Vietnam}
 
@@ -36,9 +37,9 @@
   \maketitle
 \end{frame}
 
-\begin{frame}
-  \tableofcontents
-\end{frame}
+% \begin{frame}
+%   \tableofcontents
+% \end{frame}
 
 \section{Introduction}
 %-------------------------------------------------------------------------
@@ -451,13 +452,23 @@
 
 %-------------------------------------------------------------------------
 \begin{frame}
-  \centering{\huge\bf The End of CMA-ES!!!}
+  \vspace{4cm}
+  % \centering{\huge\bf The End of CMA-ES!!!}
+
+  \begin{figure}[h] 
+    \begin{tikzpicture}
+      \node (empty) [rectangle] {\huge\bf The End of CMA-ES!!!};
+      \pause
+      \node [rectangle, below of=empty, xshift=5cm, yshift=-2cm] {... from me};
+    \end{tikzpicture}
+  \end{figure}
 \end{frame}
 %-------------------------------------------------------------------------
 
 
 %-------------------------------------------------------------------------
 \begin{frame}
+  \vspace{.4cm}
   \begin{figure}[h]
     \begin{tikzpicture}[
       box/.style = { 
@@ -466,19 +477,194 @@
         text width = 3.5cm, 
         line width =1pt,
         rounded corners
+      },
+      arrow/.style = {
+        thick,
+        <-, 
+        >=stealth
       }]
-      \node (GBO) [box] {Gradient-based Opt.};
-      \node (GD) [box, below of=GBO, xshift=4cm] {Gradient Descent};
-      \node (DFO) [box, below of=GD, xshift=-.5cm] {Derivative-Free Opt.};
-      \node (RS) [box, below of=GD,yshift=-.3cm] {Random Search};
-      \node (ES) [box, below of=RS] {Evolution Strategy};
-      \node (CMA) [box, below of=ES] {CMA-ES};
+      \node (frame) [rectangle, text width=3.8cm, draw=red, xshift=4cm, yshift=-2cm, minimum height=6cm, line width=1pt] {};
+      \node [box, dashed, below of=frame, red, yshift=-2.5cm] {Presented Methods};
+      \node (GBO) [box, orange, yshift=1.5cm] {Gradient-based Opt.};
+      \node (GD) [box, below of=GBO, xshift=4cm, draw=red] {Gradient Methods};
+      \node (GD detailed) [box, right of=GD, xshift=3.6cm] {gradient/derivative};
+      \node (DFO) [box, below of=GD, xshift=-4cm, orange] {Derivative-Free Opt.};
+      \node (RS) [box, below of=DFO, xshift=4cm, yshift=-.3cm, draw=red] {Random Search};
+      \node (RS detailed) [box, right of=RS, xshift=4cm, text width =4.3cm] {generate random points};
+      \node (ES) [box, below of=RS, yshift=-.2cm, draw=red] {$(\parent,\offspring)$-ES};
+      \node (ES detailed) [box, right of=ES, xshift=3.6cm] {random search + repeatition};
+      \node (CMA) [box, below of=ES, yshift=-.4cm, draw=red] {CMA-ES};
+      \node (CMA detailed) [box, right of=CMA, xshift=4cm, text width=4.5cm] {learning/adaptation (non-trivial};
 
+      \draw [arrow] (GD) -- (GD detailed);
+      \draw [arrow] (RS) -- (RS detailed);
+      \draw [arrow] (ES) -- (ES detailed);
+      \draw [arrow] (CMA) -- (CMA detailed);
+
+      \node (pic) at (0,-3) {\includegraphics[scale=.14]{rugged_landscape_5d.png}};
     \end{tikzpicture}
   \end{figure}
 \end{frame}
 %-------------------------------------------------------------------------
 
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \vspace{.2cm}
+  \red{\huge\bf CMA-ES vs gradient descent vs quasi-Newton}
+
+    Five landscapes with known minimizer $\mathbf{x}^*$, tested in $d=2$ and $d=10$:
+    \vspace{0.3cm}
+
+    \begin{enumerate}
+        \item \textbf{Sphere} $|\mathbf{x}|^2$: isotropic, convex
+        \item \textbf{Ellipsoid} $\sum_i 10^{6i/(d-1)}x_i^2$: separable,
+              condition number $10^6$.
+        \item \textbf{Rotated ellipsoid} $\mathbf{x}^{T}Q^{T}\Lambda Q\mathbf{x}$:
+              same spectrum, principal axes no longer aligned with the coordinates.
+        \item \textbf{Rosenbrock}: non-convex but \emph{smooth} and unimodal;
+              a narrow valley whose curvature changes along its length.
+        \item \textbf{Rastrigin}: {\color{red}multimodal}, {\color{red}local minima} on a unit grid;
+              tests global behaviour rather than local convergence.
+    \end{enumerate}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \vspace{.2cm}
+  \red{\huge\bf Isotropic quadratic problem}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{func1.png}
+        \label{fig:placeholder}
+    \end{figure}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+%-------------------------------------------------------------------------
+\begin{frame}
+  \red{\huge\bf Convergence Analysis: $\|\mathbf{x}_n - \mathbf{x}^*\|$}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.95\linewidth]{comparison-1.png}
+        \caption{Convergence Analysis on Isotropic Quadratic Problem}
+        \label{fig:conv_isotropic}
+    \end{figure}
+\end{frame}
+%-------------------------------------------------------------------------
+
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf ill-conditioned quadratic problem}
+    \begin{figure}
+        \centering
+        \includegraphics[width=1\linewidth]{func2.png}
+        \label{fig:placeholder}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf Convergence Analysis: $\|\mathbf{x}_n - \mathbf{x}^*\|$}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.95\linewidth]{comparison-2.png}
+        \caption{Convergence Analysis on Ill-Conditioned Quadratic Problem}
+        \label{fig:conv_ill_conditioned}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf Rotated Ellipsoid Problem}
+    \begin{figure}
+        \centering
+        \includegraphics[width=1\linewidth]{func3.png}
+        \label{fig:placeholder}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf Convergence Analysis: $\|\mathbf{x}_n - \mathbf{x}^*\|$}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.95\linewidth]{comparison-3.png}
+        \caption{Convergence Analysis on Rotated Quadratic Problem}
+        \label{fig:conv_rotated}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf Ronsenbrock problem}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{func4.png}
+    \label{fig:placeholder}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf Convergence Analysis: $\|\mathbf{x}_n - \mathbf{x}^*\|$}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.95\linewidth]{comparison-4.png}
+        \caption{Convergence Analysis on Rosenbrock Problem}
+        \label{fig:conv_rosenbrock}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf Rastrigin problem}
+    \begin{figure}
+        \centering
+        \includegraphics[width=1\linewidth]{func5.png}
+        \label{fig:placeholder}
+    \end{figure}
+\end{frame}
+%--------------------
+\begin{frame}
+  \includegraphics[width=\textwidth]{messageImage_1789092979266.jpg}
+\end{frame}
+%-------------------
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf Convergence Analysis: $\|\mathbf{x}_n - \mathbf{x}^*\|$}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.95\linewidth]{comparison-5.png}
+        \caption{Convergence Analysis on Rastrigin Problem}
+        \label{fig:conv_rastrigin}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+  \vspace{.3cm}
+  \red{\huge\bf Overall Evaluation}
+    \begin{block}{When Gradient Descent is Better}
+        \begin{itemize}
+            \item \textbf{Isotropic \& well-conditioned problems} (e.g., Sphere).
+            \item \textbf{Execution Speed:} Extremely fast due to exact analytical gradient steps.
+            \item Highly scalable to large dimensions \textbf{if} the landscape is smooth and convex.
+        \end{itemize}
+    \end{block}
+    
+    \begin{block}{When CMA-ES is Better}
+        \begin{itemize}
+            \item \textbf{Ill-conditioned \& correlated landscapes} (e.g., Rotated Ellipsoid): Effectively adapts its covariance matrix to match the problem's topography.
+            \item \textbf{Non-convex \& multimodal problems} (e.g., Rosenbrock, Rastrigin): Its stochastic nature helps escape narrow valleys and shallow local minima.
+            \item Does not require gradient information (derivative-free optimization).
+        \end{itemize}
+    \end{block}
+\end{frame}
 
 %-------------------------------------------------------------------------
 \begin{frame}
