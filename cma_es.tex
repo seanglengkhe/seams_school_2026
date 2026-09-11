@@ -511,7 +511,7 @@
 %-------------------------------------------------------------------------
 \begin{frame}
   \vspace{.2cm}
-  \red{\huge\bf CMA-ES vs gradient descent vs quasi-Newton}
+  \red{\huge\bf CMA-ES vs Gradient Descent vs Quasi-Newton}
 
     Five landscapes with known minimizer $\mathbf{x}^*$, tested in $d=2$ and $d=10$:
     \vspace{0.3cm}
@@ -534,7 +534,7 @@
 %-------------------------------------------------------------------------
 \begin{frame}
   \vspace{.2cm}
-  \red{\huge\bf Isotropic quadratic problem}
+  \red{\huge\bf Isotropic Quadratic Problem}
     \begin{figure}
         \centering
         \includegraphics[width=\textwidth]{func1.png}
@@ -559,7 +559,7 @@
 
 \begin{frame}
   \vspace{.3cm}
-  \red{\huge\bf ill-conditioned quadratic problem}
+  \red{\huge\bf Ill-Conditioned Quadratic Problem}
     \begin{figure}
         \centering
         \includegraphics[width=1\linewidth]{func2.png}
@@ -601,7 +601,7 @@
 
 \begin{frame}
   \vspace{.3cm}
-  \red{\huge\bf Ronsenbrock problem}
+  \red{\huge\bf Rosenbrock Problem}
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{func4.png}
@@ -622,18 +622,13 @@
 
 \begin{frame}
   \vspace{.3cm}
-  \red{\huge\bf Rastrigin problem}
+  \red{\huge\bf Rastrigin Problem}
     \begin{figure}
         \centering
         \includegraphics[width=1\linewidth]{func5.png}
         \label{fig:placeholder}
     \end{figure}
 \end{frame}
-%--------------------
-\begin{frame}
-  \includegraphics[width=\textwidth]{messageImage_1789092979266.jpg}
-\end{frame}
-%-------------------
 
 \begin{frame}
   \vspace{.3cm}
@@ -646,9 +641,18 @@
     \end{figure}
 \end{frame}
 
+%--------------------
+\begin{frame}
+  \red{\huge Success Rate: Runs Reaching~$\|\mathbf{x}_n - \mathbf{x}^*\|<10^{-6}$}\\
+  \vspace{.5cm}
+  \includegraphics[width=\textwidth]{messageImage_1789092979266.jpg}
+\end{frame}
+%-------------------
+
 \begin{frame}
   \vspace{.3cm}
   \red{\huge\bf Overall Evaluation}
+  \vspace{.3cm}
     \begin{block}{When Gradient Descent is Better}
         \begin{itemize}
             \item \textbf{Isotropic \& well-conditioned problems} (e.g., Sphere).
