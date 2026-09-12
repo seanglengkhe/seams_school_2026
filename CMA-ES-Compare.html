@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robust CMA-ES Interactive Visualization</title>
+    
+    <!-- MathJax for rendering LaTeX formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .container { display: flex; gap: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 1150px; width: 100%; box-sizing: border-box;}
+        .controls { display: flex; flex-direction: column; gap: 10px; width: 380px; flex-shrink: 0;}
+        .canvas-wrapper { flex-grow: 1; display: flex; justify-content: center; align-items: center; }
+        canvas { background-color: #ffffff; border: 1px solid #ccc; border-radius: 5px; max-width: 100%; height: auto; }
+        
+        .input-group { display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
+        .input-group input { width: 65px; padding: 5px; border: 1px solid #ccc; border-radius: 3px; }
+        .input-group input.half { width: 45px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 5px; }
+        button { flex: 1; padding: 10px; font-size: 14px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        button:hover { background-color: #0056b3; }
+        button.auto { background-color: #28a745; }
+        button.auto:hover { background-color: #218838; }
+        button.reset { background-color: #dc3545; }
+        button.reset:hover { background-color: #c82333; }
+        button.help { background-color: #6c757d; margin-top: 5px; }
+        button.help:hover { background-color: #5a6268; }
+        
+        .status { background: #e9ecef; padding: 15px; border-radius: 5px; font-size: 14px; line-height: 1.5; }
+        .status h2 { margin-top: 0; font-size: 18px; color: #333; margin-bottom: 10px;}
+        .hyperparams { font-family: monospace; font-size: 12px; color: #0056b3; background: #e6f2ff; padding: 10px; border-radius: 5px; margin-top: 5px; }
+
+        /* Guide Section Styles */
+        .guide-container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 1150px;
+            width: 100%;
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+        .guide-container h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            font-size: 24px;
+        }
+        .guide-container h3 {
+            color: #0056b3;
+            margin-top: 30px;
+            font-size: 18px;
+        }
+        .guide-content {
+            line-height: 1.7;
+            color: #444;
+            font-size: 15px;
+        }
+        .guide-content p {
+            margin-bottom: 15px;
+        }
+        .math-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin: 10px 0 20px 0;
+            overflow-x: auto;
+        }
+        .guide-content ul, .guide-content ol {
+            padding-left: 25px;
+            margin-bottom: 20px;
+        }
+        .guide-content li {
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="canvas-wrapper">
+            <canvas id="plotCanvas" width="600" height="600"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="status">
+                <h2>CMA-ES Configuration</h2>
+                
+                <strong>Objective Function</strong>
+                <div class="input-group" style="margin-top: 5px; margin-bottom: 5px;">
+                    <select id="objectiveFunc" onchange="onObjectiveChange()" style="width: 100%; padding: 5px; border-radius: 3px; border: 1px solid #ccc;">
+                        <option value="quadratic">Quadratic (Convex)</option>
+                        <option value="rastrigin">Rastrigin (Non-convex)</option>
+                        <option value="ackley">Ackley (Non-convex)</option>
+                        <option value="rosenbrock">Rosenbrock (Non-convex)</option>
+                    </select>
+                </div>
+                
+                <div id="quadraticParams">
+                    <strong>f(x, y) = a·x² + b·y²</strong>
+                    <div class="input-group" style="margin-top: 5px;">
+                        <label>Param a (X-axis):</label>
+                        <input type="number" id="paramA" value="1.0" step="0.5" min="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Param b (Y-axis):</label>
+                        <input type="number" id="paramB" value="10.0" step="0.5" min="0.1">
+                    </div>
+                </div>
+
+                <hr style="border: 0.5px solid #ccc; margin: 10px 0;">
+
+                <strong>Axis Limits</strong>
+                <div class="input-group" style="margin-top: 5px;">
+                    <label>X Min / Max:</label>
+                    <div>
+                        <input type="number" id="xMinInput" value="-5.0" step="1.0" class="half">
+                        <input type="number" id="xMaxInput" value="50.0" step="1.0" class="half">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Y Min / Max:</label>
+                    <div>
+                        <input type="number" id="yMinInput" value="-5.0" step="1.0" class="half">
+                        <input type="number" id="yMaxInput" value="50.0" step="1.0" class="half">
+                    </div>
+                </div>
+                <hr style="border: 0.5px solid #ccc; margin: 10px 0;">
+                
+                <div class="input-group">
+                    <label>Start X (m_x):</label>
+                    <input type="number" id="startX" value="40.0" step="1.0">
+                </div>
+                <div class="input-group">
+                    <label>Start Y (m_y):</label>
+                    <input type="number" id="startY" value="40.0" step="1.0">
+                </div>
+
+                <hr style="border: 0.5px solid #ccc; margin: 10px 0;">
+                <strong>Compare Algorithms</strong>
+                <div style="font-size: 14px; margin-top: 5px; display: flex; flex-direction: column; gap: 5px;">
+                    <label><input type="checkbox" id="showGD" checked onchange="draw()"> <span style="color: #ff00ff; font-weight: bold;">■</span> Gradient Descent</label>
+                    <label><input type="checkbox" id="showBFGS" checked onchange="draw()"> <span style="color: #00cccc; font-weight: bold;">■</span> BFGS</label>
+                </div>
+                
+                <hr style="border: 0.5px solid #ccc; margin: 10px 0;">
+                <strong>Population & Scaling</strong>
+                <div class="input-group" style="margin-top: 5px;">
+                    <label>Candidates (&lambda;):</label>
+                    <input type="number" id="lambdaInput" value="20" step="1" min="4">
+                </div>
+                <div class="input-group">
+                    <label>Initial Step-size (&sigma;):</label>
+                    <input type="number" id="sigmaInput" value="4.0" step="0.5" min="0.1">
+                </div>
+                <div class="input-group" style="margin-top: 5px;">
+                    <label>Max Gen:</label>
+                    <input type="number" id="maxGen" value="30" step="1" min="1">
+                </div>
+
+                <div class="hyperparams" id="hyperparamBox">
+                    <strong>Auto-Tuned Hyperparameters:</strong><br>
+                    Calculating based on d=2 and &lambda;...
+                </div>
+            </div>
+
+            <button id="resetBtn" class="reset" onclick="applyAndReset()">Apply & Reset</button>
+            
+            <div class="btn-group">
+                <button id="nextBtn" onclick="nextStep()">Next Step ➔</button>
+                <button id="autoBtn" class="auto" onclick="toggleAutoRun()">Auto Run ▶</button>
+            </div>
+            
+            <div class="status" id="statusBox">
+                <h2 id="stepTitle">Ready</h2>
+                <div id="stepDesc">Adjust parameters and click "Apply", or "Next Step" to begin.</div>
+            </div>
+            
+            <button class="help" onclick="document.getElementById('guideSection').scrollIntoView({behavior: 'smooth'})">📖 How CMA-ES Works</button>
+        </div>
+    </div>
+
+    <!-- Educational Guide Section -->
+    <div class="guide-container" id="guideSection">
+        <h2>Understanding CMA-ES: A Mathematical Perspective</h2>
+        <div class="guide-content">
+            <p><strong>Covariance Matrix Adaptation Evolution Strategy (CMA-ES)</strong> is a state-of-the-art stochastic, derivative-free method for numerical optimization of difficult non-linear or non-convex continuous problems.</p>
+            <p>Unlike standard Gradient Descent which follows the steepest slope, CMA-ES evaluates a "cloud" of candidate points and dynamically reshapes this cloud to adapt to the topography of the objective landscape. Below is the theoretical framework outlining how the algorithm evolves over generation \( g \).</p>
+            
+            <h3>1. Sampling the Candidates</h3>
+            <p>At generation \( g \), a population of \( \lambda \) new candidate solutions is generated. Each candidate \( x_k \) is sampled from a multivariate normal distribution:</p>
+            <div class="math-box">
+                \[ x_k^{(g+1)} \sim m^{(g)} + \sigma^{(g)} \mathcal{N}(0, C^{(g)}) \quad \text{for } k = 1, \dots, \lambda \]
+            </div>
+            <ul>
+                <li>\( m^{(g)} \): The current mean vector (center of search).</li>
+                <li>\( \sigma^{(g)} \): The global step-size (scaling factor).</li>
+                <li>\( C^{(g)} \): The covariance matrix determining the orientation and shape of the distribution ellipsoid.</li>
+            </ul>
+
+            <h3>2. Selection & Recombination</h3>
+            <p>The \( \lambda \) candidates are evaluated on the objective function \( f(x) \) and sorted such that \( f(x_{1:\lambda}) \leq f(x_{2:\lambda}) \dots \leq f(x_{\lambda:\lambda}) \). The top \( \mu \) best candidates are selected and recombined using normalized weights \( w_i \) to form the new mean \( m^{(g+1)} \):</p>
+            <div class="math-box">
+                \[ m^{(g+1)} = \sum_{i=1}^{\mu} w_i x_{i:\lambda}^{(g+1)} \]
+            </div>
+            <p>We also define the weighted average step \( y_w \) taken by the distribution mean, scaled by the step-size:</p>
+            <div class="math-box">
+                \[ y_w = \frac{m^{(g+1)} - m^{(g)}}{\sigma^{(g)}} = \sum_{i=1}^{\mu} w_i y_{i:\lambda}^{(g+1)} \]
+            </div>
+
+            <h3>3. Step-size Adaptation (Cumulative Path Adaptation)</h3>
+            <p>To control the global step-size \( \sigma \), an "evolution path" \( p_\sigma \) is tracked. If the algorithm takes consecutive steps in the same direction (indicating confidence), \( p_\sigma \) grows long, and \( \sigma \) is increased. If steps zig-zag (indicating uncertainty or local minima), \( p_\sigma \) stays short, and \( \sigma \) is decreased.</p>
+            <div class="math-box">
+                \[ p_\sigma^{(g+1)} = (1 - c_\sigma) p_\sigma^{(g)} + \sqrt{c_\sigma (2 - c_\sigma) \mu_{\text{eff}}} \, {C^{(g)}}^{-\frac{1}{2}} y_w \]
+            </div>
+            <p>The step-size is updated by comparing the length of \( p_\sigma \) to the expected length under random selection \( E\|\mathcal{N}(0, I)\| \):</p>
+            <div class="math-box">
+                \[ \sigma^{(g+1)} = \sigma^{(g)} \exp\left( \frac{c_\sigma}{d_\sigma} \left( \frac{\|p_\sigma^{(g+1)}\|}{E\|\mathcal{N}(0, I)\|} - 1 \right) \right) \]
+            </div>
+
+            <h3>4. Covariance Matrix Adaptation</h3>
+            <p>The matrix \( C \) learns the correlations between variables, stretching the distribution to align with the landscape's valleys. This relies on another conjugate evolution path \( p_c \):</p>
+            <div class="math-box">
+                \[ p_c^{(g+1)} = (1 - c_c) p_c^{(g)} + \sqrt{c_c (2 - c_c) \mu_{\text{eff}}} \, y_w \]
+            </div>
+            <p>The covariance matrix is updated using a combination of two powerful mechanisms:</p>
+            <ul>
+                <li><strong>Rank-1 Update:</strong> Uses the historical path \( p_c \) to stretch the distribution along the long-term trajectory.</li>
+                <li><strong>Rank-\( \mu \) Update:</strong> Uses the variance of the current successful candidates to capture the local topography of the landscape.</li>
+            </ul>
+            <div class="math-box">
+                \[ C^{(g+1)} = (1 - c_1 - c_\mu) C^{(g)} + \underbrace{c_1 p_c^{(g+1)} {p_c^{(g+1)}}^T}_{\text{Rank-1 update}} + \underbrace{c_\mu \sum_{i=1}^{\mu} w_i y_{i:\lambda}^{(g+1)} {y_{i:\lambda}^{(g+1)}}^T}_{\text{Rank-}\mu \text{ update}} \]
+            </div>
+
+            <h3>Navigating Non-Convex Landscapes</h3>
+            <ul>
+                <li><strong>Quadratic (Convex):</strong> A simple paraboloid bowl. Notice how the covariance matrix stretches perfectly to match the oval contour lines.</li>
+                <li><strong>Rastrigin:</strong> A highly multimodal function full of deep local minima (ripples). The algorithm needs a larger population (<code>&lambda;</code>) and initial step-size (<code>&sigma;</code>) to avoid getting trapped in a ripple before finding the global center.</li>
+                <li><strong>Ackley:</strong> Characterized by a nearly flat outer region and a deep hole at the center. CMA-ES excels here by expanding its search radius in the flat region until it detects the steep gradient of the central hole.</li>
+                <li><strong>Rosenbrock:</strong> The infamous "Banana Valley". The global minimum sits inside a long, narrow, and curved flat valley. Watch how the CMA-ES ellipse stretches into a thin line and slowly turns to follow the curve of the valley floor.</li>
+            </ul>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById("plotCanvas");
+    const ctx = canvas.getContext("2d");
+    const stepTitle = document.getElementById("stepTitle");
+    const stepDesc = document.getElementById("stepDesc");
+    const hyperparamBox = document.getElementById("hyperparamBox");
+
+    let xMin = -5.0, xMax = 50.0, yMin = -5.0, yMax = 50.0;
+    
+    function px(x) { return (x - xMin) / (xMax - xMin) * canvas.width; }
+    function py(y) { return canvas.height - (y - yMin) / (yMax - yMin) * canvas.height; }
+    function scaleRadius(r) { return r / (xMax - xMin) * canvas.width; } 
+
+    function randn() {
+        let u = 0, v = 0;
+        while(u === 0) u = Math.random();
+        while(v === 0) v = Math.random();
+        return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function getEigen(C) {
+        let c11 = C.c11, c12 = C.c12, c22 = C.c22;
+        if (Math.abs(c12) < 1e-12) {
+            return c11 >= c22 ? 
+                { l1: Math.max(1e-10, c11), l2: Math.max(1e-10, c22), v1: {x: 1, y: 0}, v2: {x: 0, y: 1}, angle: 0 } : 
+                { l1: Math.max(1e-10, c22), l2: Math.max(1e-10, c11), v1: {x: 0, y: 1}, v2: {x: 1, y: 0}, angle: Math.PI / 2 };
+        }
+        let T = c11 + c22;
+        let D = c11 * c22 - c12 * c12;
+        let diff = Math.max(0, T*T/4 - D);
+        let L1 = Math.max(1e-10, T/2 + Math.sqrt(diff)); 
+        let L2 = Math.max(1e-10, T/2 - Math.sqrt(diff));
+
+        let v1x = L1 - c22, v1y = c12;
+        let norm1 = Math.hypot(v1x, v1y);
+        v1x /= norm1; v1y /= norm1;
+
+        let v2x = L2 - c22, v2y = c12;
+        let norm2 = Math.hypot(v2x, v2y);
+        v2x /= norm2; v2y /= norm2;
+
+        return { l1: L1, l2: L2, v1: {x: v1x, y: v1y}, v2: {x: v2x, y: v2y}, angle: Math.atan2(v1y, v1x) };
+    }
+
+    const d = 2; 
+    const chiN = Math.sqrt(d) * (1 - 1.0/(4*d) + 1.0/(21*d*d)); 
+
+    let a, b, lambda, mu, mu_eff, weights;
+    let sigma, sigma_new, maxGenerations;
+    let cc, cs, c1, cmu, damps;
+    let m, m_new, C, C_new, pc, pc_new, psigma, psigma_new;
+    let gen, step, candidates, trajectory;
+    let gdTrajectory = [];
+    let bfgsTrajectory = [];
+    let gdCurr, bfgsCurr, bfgsH;
+    let autoInterval = null;
+
+    function grad(x, y) {
+        let eps = 1e-5;
+        let dx = (f(x + eps, y) - f(x - eps, y)) / (2 * eps);
+        let dy = (f(x, y + eps) - f(x, y - eps)) / (2 * eps);
+        return {x: dx, y: dy};
+    }
+
+    function lineSearch(x, y, dx, dy) {
+        let alpha = 1.0; 
+        let c = 1e-4;
+        let rho = 0.5;
+        let f0 = f(x, y);
+        let g0 = grad(x, y);
+        let dir_dot_g = dx * g0.x + dy * g0.y;
+        if (dir_dot_g >= 0) return 1e-3; 
+        
+        for (let i = 0; i < 30; i++) {
+            let nx = x + alpha * dx;
+            let ny = y + alpha * dy;
+            if (f(nx, ny) <= f0 + c * alpha * dir_dot_g) {
+                return alpha;
+            }
+            alpha *= rho;
+        }
+        return alpha;
+    }
+
+    function stepAlgorithms() {
+        let numSteps = 2; // Take 2 steps per CMA-ES update phase (so 10 steps per gen)
+        for (let i = 0; i < numSteps; i++) {
+            // --- Gradient Descent ---
+            if (gdTrajectory.length < 5000) {
+                let g = grad(gdCurr.x, gdCurr.y);
+                let gNorm = Math.hypot(g.x, g.y);
+                if (gNorm > 1e-5) {
+                    let dx = -g.x;
+                    let dy = -g.y;
+                    
+                    let stepLen = Math.hypot(dx, dy);
+                    let maxStep = 2.0;
+                    if (stepLen > maxStep) { dx = (dx / stepLen) * maxStep; dy = (dy / stepLen) * maxStep; }
+
+                    let lr = lineSearch(gdCurr.x, gdCurr.y, dx, dy);
+                    gdCurr.x += lr * dx;
+                    gdCurr.y += lr * dy;
+                    gdTrajectory.push({x: gdCurr.x, y: gdCurr.y});
+                }
+            }
+
+            // --- BFGS ---
+            if (bfgsTrajectory.length < 5000) {
+                let g = grad(bfgsCurr.x, bfgsCurr.y);
+                let gNorm = Math.hypot(g.x, g.y);
+                if (gNorm > 1e-5) {
+                    let dx = -(bfgsH.h11 * g.x + bfgsH.h12 * g.y);
+                    let dy = -(bfgsH.h12 * g.x + bfgsH.h22 * g.y);
+                    
+                    let dir_dot_g = dx * g.x + dy * g.y;
+                    if (dir_dot_g > 0) { 
+                        bfgsH = {h11: 1, h12: 0, h22: 1};
+                        dx = -g.x; dy = -g.y;
+                    }
+
+                    let stepLen = Math.hypot(dx, dy);
+                    let maxStep = 2.0;
+                    if (stepLen > maxStep) { dx = (dx / stepLen) * maxStep; dy = (dy / stepLen) * maxStep; }
+
+                    let lr = lineSearch(bfgsCurr.x, bfgsCurr.y, dx, dy);
+                    let nx = bfgsCurr.x + lr * dx;
+                    let ny = bfgsCurr.y + lr * dy;
+                    
+                    let s_x = nx - bfgsCurr.x;
+                    let s_y = ny - bfgsCurr.y;
+                    
+                    let ng = grad(nx, ny);
+                    let y_x = ng.x - g.x;
+                    let y_y = ng.y - g.y;
+                    
+                    let rho_denom = y_x * s_x + y_y * s_y;
+                    if (rho_denom > 1e-8) {
+                        let rho = 1.0 / rho_denom;
+                        
+                        let I_rsy_11 = 1 - rho * s_x * y_x;
+                        let I_rsy_12 = - rho * s_x * y_y;
+                        let I_rsy_21 = - rho * s_y * y_x;
+                        let I_rsy_22 = 1 - rho * s_y * y_y;
+                        
+                        let I_rys_11 = 1 - rho * y_x * s_x;
+                        let I_rys_12 = - rho * y_x * s_y;
+                        let I_rys_21 = - rho * y_y * s_x;
+                        let I_rys_22 = 1 - rho * y_y * s_y;
+                        
+                        let t11 = I_rsy_11 * bfgsH.h11 + I_rsy_12 * bfgsH.h12; 
+                        let t12 = I_rsy_11 * bfgsH.h12 + I_rsy_12 * bfgsH.h22;
+                        let t21 = I_rsy_21 * bfgsH.h11 + I_rsy_22 * bfgsH.h12;
+                        let t22 = I_rsy_21 * bfgsH.h12 + I_rsy_22 * bfgsH.h22;
+                        
+                        let term1_11 = t11 * I_rys_11 + t12 * I_rys_21;
+                        let term1_12 = t11 * I_rys_12 + t12 * I_rys_22;
+                        let term1_22 = t21 * I_rys_12 + t22 * I_rys_22;
+                        
+                        let term2_11 = rho * s_x * s_x;
+                        let term2_12 = rho * s_x * s_y;
+                        let term2_22 = rho * s_y * s_y;
+                        
+                        bfgsH.h11 = term1_11 + term2_11;
+                        bfgsH.h12 = term1_12 + term2_12;
+                        bfgsH.h22 = term1_22 + term2_22;
+                    } else if (rho_denom < -1e-8) {
+                        bfgsH = {h11: 1, h12: 0, h22: 1};
+                    }
+                    
+                    bfgsCurr.x = nx; bfgsCurr.y = ny;
+                    bfgsTrajectory.push({x: bfgsCurr.x, y: bfgsCurr.y});
+                }
+            }
+        }
+    }
+    let currentFunc = "quadratic";
+    
+    let backgroundCanvas = document.createElement("canvas");
+    backgroundCanvas.width = 600;
+    backgroundCanvas.height = 600;
+    let bgCtx = backgroundCanvas.getContext("2d");
+    let bgCached = false;
+
+    function f(x, y) { 
+        if (currentFunc === "quadratic") {
+            return a * (x * x) + b * (y * y);
+        } else if (currentFunc === "rastrigin") {
+            return 20 + (x * x - 10 * Math.cos(2 * Math.PI * x)) + (y * y - 10 * Math.cos(2 * Math.PI * y));
+        } else if (currentFunc === "ackley") {
+            return -20 * Math.exp(-0.2 * Math.sqrt(0.5 * (x * x + y * y))) - Math.exp(0.5 * (Math.cos(2 * Math.PI * x) + Math.cos(2 * Math.PI * y))) + Math.E + 20;
+        } else if (currentFunc === "rosenbrock") {
+            return Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
+        }
+        return 0;
+    }
+
+    function onObjectiveChange() {
+        currentFunc = document.getElementById("objectiveFunc").value;
+        if (currentFunc === "quadratic") {
+            document.getElementById("quadraticParams").style.display = "block";
+            document.getElementById("xMinInput").value = -5.0;
+            document.getElementById("xMaxInput").value = 50.0;
+            document.getElementById("yMinInput").value = -5.0;
+            document.getElementById("yMaxInput").value = 50.0;
+            document.getElementById("startX").value = 40.0;
+            document.getElementById("startY").value = 40.0;
+            document.getElementById("sigmaInput").value = 4.0;
+            document.getElementById("lambdaInput").value = 20;
+            document.getElementById("maxGen").value = 30;
+        } else if (currentFunc === "rastrigin") {
+            document.getElementById("quadraticParams").style.display = "none";
+            document.getElementById("xMinInput").value = -5.12;
+            document.getElementById("xMaxInput").value = 5.12;
+            document.getElementById("yMinInput").value = -5.12;
+            document.getElementById("yMaxInput").value = 5.12;
+            document.getElementById("startX").value = 4.5;
+            document.getElementById("startY").value = 4.5;
+            document.getElementById("sigmaInput").value = 1.5;
+            document.getElementById("lambdaInput").value = 100;
+            document.getElementById("maxGen").value = 60;
+        } else if (currentFunc === "ackley") {
+            document.getElementById("quadraticParams").style.display = "none";
+            document.getElementById("xMinInput").value = -32.0;
+            document.getElementById("xMaxInput").value = 32.0;
+            document.getElementById("yMinInput").value = -32.0;
+            document.getElementById("yMaxInput").value = 32.0;
+            document.getElementById("startX").value = 20.5;
+            document.getElementById("startY").value = 20.5;
+            document.getElementById("sigmaInput").value = 5.0;
+            document.getElementById("lambdaInput").value = 60;
+            document.getElementById("maxGen").value = 80;
+        } else if (currentFunc === "rosenbrock") {
+            document.getElementById("quadraticParams").style.display = "none";
+            document.getElementById("xMinInput").value = -2.0;
+            document.getElementById("xMaxInput").value = 3.0;
+            document.getElementById("yMinInput").value = -1.0;
+            document.getElementById("yMaxInput").value = 4.0;
+            document.getElementById("startX").value = -1.5;
+            document.getElementById("startY").value = 3.0;
+            document.getElementById("sigmaInput").value = 0.5;
+            document.getElementById("lambdaInput").value = 40;
+            document.getElementById("maxGen").value = 150;
+        }
+        
+        applyAndReset();
+    }
+
+    function applyAndReset() {
+        if (autoInterval) toggleAutoRun();
+
+        currentFunc = document.getElementById("objectiveFunc").value;
+        bgCached = false; 
+
+        xMin = parseFloat(document.getElementById("xMinInput").value);
+        xMax = parseFloat(document.getElementById("xMaxInput").value);
+        yMin = parseFloat(document.getElementById("yMinInput").value);
+        yMax = parseFloat(document.getElementById("yMaxInput").value);
+        if (xMin >= xMax) { xMax = xMin + 10; document.getElementById("xMaxInput").value = xMax; }
+        if (yMin >= yMax) { yMax = yMin + 10; document.getElementById("yMaxInput").value = yMax; }
+
+        a = Math.max(0.1, parseFloat(document.getElementById("paramA").value));
+        b = Math.max(0.1, parseFloat(document.getElementById("paramB").value));
+        lambda = Math.max(4, parseInt(document.getElementById("lambdaInput").value));
+        sigma = Math.max(0.1, parseFloat(document.getElementById("sigmaInput").value));
+        maxGenerations = Math.max(1, parseInt(document.getElementById("maxGen").value));
+        
+        mu = Math.floor(lambda / 2);
+        weights = [];
+        let weightSum = 0;
+        for (let i = 1; i <= mu; i++) {
+            let w = Math.log(mu + 0.5) - Math.log(i);
+            weights.push(w);
+            weightSum += w;
+        }
+        mu_eff = 0;
+        for (let i = 0; i < mu; i++) {
+            weights[i] /= weightSum;
+            mu_eff += weights[i] * weights[i];
+        }
+        mu_eff = 1.0 / mu_eff;
+
+        cc = (4 + mu_eff / d) / (d + 4 + 2 * mu_eff / d);
+        cs = (mu_eff + 2) / (d + mu_eff + 5);
+        c1 = 2 / (Math.pow(d + 1.3, 2) + mu_eff);
+        cmu = Math.min(1 - c1, 2 * (mu_eff - 2 + 1 / mu_eff) / (Math.pow(d + 2, 2) + mu_eff));
+        damps = 1 + 2 * Math.max(0, Math.sqrt((mu_eff - 1) / (d + 1)) - 1) + cs;
+
+        hyperparamBox.innerHTML = `
+            <strong>Auto-Tuned Hyperparameters:</strong><br>
+            &mu;: ${mu} | &mu;<sub>eff</sub>: ${mu_eff.toFixed(2)}<br>
+            c<sub>c</sub>: ${cc.toFixed(3)} | c<sub>&sigma;</sub>: ${cs.toFixed(3)}<br>
+            c<sub>1</sub>: ${c1.toFixed(3)} | c<sub>&mu;</sub>: ${cmu.toFixed(3)} | d<sub>&sigma;</sub>: ${damps.toFixed(3)}
+        `;
+
+        m = {x: parseFloat(document.getElementById("startX").value), y: parseFloat(document.getElementById("startY").value)};
+        C = {c11: 1.0, c12: 0.0, c22: 1.0};
+        pc = {x: 0, y: 0};
+        psigma = {x: 0, y: 0};
+        
+        m_new = null; C_new = null; pc_new = null; psigma_new = null; sigma_new = sigma;
+        gen = 1; step = 0; candidates = [];
+        trajectory = [{...m, C: {...C}}];
+        
+        gdTrajectory = [{x: m.x, y: m.y}];
+        bfgsTrajectory = [{x: m.x, y: m.y}];
+        gdCurr = {x: m.x, y: m.y};
+        bfgsCurr = {x: m.x, y: m.y};
+        bfgsH = {h11: 1, h12: 0, h22: 1};
+
+        updateUI("Ready", `Initialized. Mean m = (${m.x.toFixed(2)}, ${m.y.toFixed(2)}), \u03C3 = ${sigma.toFixed(2)}.`);
+        document.getElementById("nextBtn").disabled = false;
+        draw();
+    }
+
+    function toggleAutoRun() {
+        const btn = document.getElementById("autoBtn");
+        if (autoInterval) {
+            clearInterval(autoInterval);
+            autoInterval = null;
+            btn.innerText = "Auto Run ▶";
+            btn.style.backgroundColor = "#28a745";
+        } else {
+            if (gen > maxGenerations) applyAndReset();
+            btn.innerText = "Stop ⏸";
+            btn.style.backgroundColor = "#ffc107";
+            autoInterval = setInterval(() => {
+                if (gen > maxGenerations) { toggleAutoRun(); } else { nextStep(); }
+            }, 700);
+        }
+    }
+
+    function nextStep() {
+        if (gen > maxGenerations) {
+            updateUI("Finished", `Completed ${maxGenerations} generations.`);
+            document.getElementById("nextBtn").disabled = true;
+            if(autoInterval) toggleAutoRun();
+            return;
+        }
+
+        stepAlgorithms();
+
+        if (step === 0) {
+            candidates = [];
+            let eg = getEigen(C);
+            for (let i = 0; i < lambda; i++) {
+                let z1 = randn(), z2 = randn();
+                let sx = Math.sqrt(eg.l1) * z1;
+                let sy = Math.sqrt(eg.l2) * z2;
+                
+                let cx = m.x + sigma * (eg.v1.x * sx + eg.v2.x * sy);
+                let cy = m.y + sigma * (eg.v1.y * sx + eg.v2.y * sy);
+                
+                let yx = (cx - m.x) / sigma;
+                let yy = (cy - m.y) / sigma;
+                
+                candidates.push({ x: cx, y: cy, fit: f(cx, cy), yx: yx, yy: yy });
+            }
+            updateUI("1. Sampling", `Generated ${lambda} candidates using C and \u03C3 = ${sigma.toFixed(3)}.`);
+            step++;
+        } else if (step === 1) {
+            candidates.sort((c1, c2) => c1.fit - c2.fit);
+            
+            let sumX = 0, sumY = 0, sumYX = 0, sumYY = 0;
+            for (let i = 0; i < mu; i++) {
+                sumX += weights[i] * candidates[i].x;
+                sumY += weights[i] * candidates[i].y;
+                sumYX += weights[i] * candidates[i].yx;
+                sumYY += weights[i] * candidates[i].yy;
+            }
+            m_new = { x: sumX, y: sumY };
+            
+            updateUI("2. Weighted Recombination", `Calculated the new mean m_{n+1} using variance-effective logarithmic weights.`);
+            step++;
+        } else if (step === 2) {
+            let eg = getEigen(C);
+            let y_mean_x = (m_new.x - m.x) / sigma;
+            let y_mean_y = (m_new.y - m.y) / sigma;
+            
+            let cc_fact = Math.sqrt(cc * (2 - cc) * mu_eff);
+            pc_new = {
+                x: (1 - cc) * pc.x + cc_fact * y_mean_x,
+                y: (1 - cc) * pc.y + cc_fact * y_mean_y
+            };
+
+            let invSqrtL1 = 1.0 / Math.sqrt(eg.l1);
+            let invSqrtL2 = 1.0 / Math.sqrt(eg.l2);
+            let vTdx = eg.v1.x * y_mean_x + eg.v1.y * y_mean_y;
+            let vTdy = eg.v2.x * y_mean_x + eg.v2.y * y_mean_y;
+            let cInvHalf_dx = eg.v1.x * (invSqrtL1 * vTdx) + eg.v2.x * (invSqrtL2 * vTdy);
+            let cInvHalf_dy = eg.v1.y * (invSqrtL1 * vTdx) + eg.v2.y * (invSqrtL2 * vTdy);
+            
+            let cs_fact = Math.sqrt(cs * (2 - cs) * mu_eff);
+            psigma_new = {
+                x: (1 - cs) * psigma.x + cs_fact * cInvHalf_dx,
+                y: (1 - cs) * psigma.y + cs_fact * cInvHalf_dy
+            };
+
+            let psigma_norm = Math.hypot(psigma_new.x, psigma_new.y);
+            sigma_new = sigma * Math.exp((cs / damps) * (psigma_norm / chiN - 1));
+            sigma_new = Math.min(Math.max(sigma_new, 1e-5), 1e5); 
+
+            updateUI("3. Paths & Step-size Adaptation", `Updated paths. Global \u03C3 adapted from ${sigma.toFixed(3)} to ${sigma_new.toFixed(3)}.`);
+            step++;
+        } else if (step === 3) {
+            let artmp_11 = 0, artmp_12 = 0, artmp_22 = 0;
+            for (let i = 0; i < mu; i++) {
+                artmp_11 += weights[i] * (candidates[i].yx * candidates[i].yx);
+                artmp_12 += weights[i] * (candidates[i].yx * candidates[i].yy);
+                artmp_22 += weights[i] * (candidates[i].yy * candidates[i].yy);
+            }
+
+            C_new = {
+                c11: (1 - c1 - cmu) * C.c11 + c1 * (pc_new.x * pc_new.x) + cmu * artmp_11,
+                c12: (1 - c1 - cmu) * C.c12 + c1 * (pc_new.x * pc_new.y) + cmu * artmp_12,
+                c22: (1 - c1 - cmu) * C.c22 + c1 * (pc_new.y * pc_new.y) + cmu * artmp_22
+            };
+            
+            C_new.c12 = (C_new.c12 + C_new.c12) / 2; 
+
+            updateUI("4. Covariance Matrix Adaptation", `Adapted covariance ellipse C_{n+1} using robust Rank-one and Rank-\u03BC information.`);
+            step++;
+        } else if (step === 4) {
+            trajectory.push({...m_new, C: {...C_new}});
+            updateUI(`5. Generation Complete`, `Transitions complete. Proceeding to Generation ${gen + 1}.`);
+            m = {...m_new}; C = {...C_new}; pc = {...pc_new}; psigma = {...psigma_new}; sigma = sigma_new;
+            gen++; step = 0;
+        }
+        draw();
+    }
+
+    function updateUI(title, desc) {
+        stepTitle.innerHTML = (gen <= maxGenerations ? `Gen ${gen}: ` : "") + title;
+        stepDesc.innerHTML = desc;
+    }
+
+    function drawMeanPoint(pt, radius, alpha = 1.0) {
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = "#FFD700"; 
+        ctx.beginPath(); ctx.arc(px(pt.x), py(pt.y), radius, 0, 2*Math.PI); ctx.fill();
+        ctx.lineWidth = 1; ctx.strokeStyle = "black"; ctx.stroke();
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawCovarianceEllipse(pt, currentC, currentSigma, color, isDashed) {
+        let eg = getEigen(currentC);
+        ctx.save();
+        ctx.translate(px(pt.x), py(pt.y)); ctx.scale(1, -1); ctx.rotate(eg.angle);
+        ctx.strokeStyle = color; ctx.lineWidth = 2.0;
+        if (isDashed) ctx.setLineDash([5, 5]); else ctx.setLineDash([]);
+        
+        let rx = scaleRadius(currentSigma * Math.sqrt(eg.l1));
+        let ry = scaleRadius(currentSigma * Math.sqrt(eg.l2));
+        if(rx > 0 && ry > 0 && !isNaN(rx) && !isNaN(ry)) {
+            ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, 2 * Math.PI); ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    function drawPathVector(pt, pathVec, color, label) {
+        ctx.save();
+        ctx.translate(px(pt.x), py(pt.y));
+        let visScale = scaleRadius(sigma * 0.5); 
+        let vx = pathVec.x * visScale, vy = -pathVec.y * visScale; 
+        let headlen = 8, angle = Math.atan2(vy, vx);
+        
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(vx, vy);
+        ctx.lineTo(vx - headlen * Math.cos(angle - Math.PI / 6), vy - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(vx, vy);
+        ctx.lineTo(vx - headlen * Math.cos(angle + Math.PI / 6), vy - headlen * Math.sin(angle + Math.PI / 6));
+        ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.stroke();
+        
+        ctx.fillStyle = color; ctx.font = "bold 14px Arial"; ctx.fillText(label, vx + 5, vy + 5);
+        ctx.restore();
+    }
+
+    function drawBackground() {
+        if (!bgCached) {
+            bgCtx.clearRect(0, 0, 600, 600);
+            
+            // Marching squares parameters
+            let cols = 150, rows = 150;
+            let gridValues = new Float32Array((cols + 1) * (rows + 1));
+            let minF = Infinity, maxF = -Infinity;
+            
+            for (let j = 0; j <= rows; j++) {
+                let y = yMax - j / rows * (yMax - yMin);
+                for (let i = 0; i <= cols; i++) {
+                    let x = xMin + i / cols * (xMax - xMin);
+                    let val = f(x, y);
+                    
+                    // Transform values to make contour spacing more intuitive
+                    if (currentFunc === 'rosenbrock') val = Math.log(1 + val);
+                    else if (currentFunc === 'quadratic') val = Math.sqrt(val);
+                    else if (currentFunc === 'ackley') val = val;
+                    else if (currentFunc === 'rastrigin') val = Math.sqrt(val);
+                    
+                    gridValues[j * (cols + 1) + i] = val;
+                    if (val < minF) minF = val;
+                    if (val > maxF) maxF = val;
+                }
+            }
+            
+            let numContours = 30; // Increased for better resolution of complex functions
+            bgCtx.strokeStyle = "rgba(180, 180, 200, 0.7)";
+            bgCtx.lineWidth = 1;
+            
+            let edgePts = (x, y, dx, dy, v1, v2, threshold) => {
+                let t = (threshold - v1) / (v2 - v1);
+                return [x + t * dx, y + t * dy];
+            };
+            
+            for (let c = 1; c <= numContours; c++) {
+                let threshold = minF + (maxF - minF) * (c / (numContours + 1));
+                bgCtx.beginPath();
+                
+                for (let j = 0; j < rows; j++) {
+                    for (let i = 0; i < cols; i++) {
+                        let v00 = gridValues[j * (cols + 1) + i];
+                        let v10 = gridValues[j * (cols + 1) + i + 1];
+                        let v01 = gridValues[(j + 1) * (cols + 1) + i];
+                        let v11 = gridValues[(j + 1) * (cols + 1) + i + 1];
+                        
+                        let cellType = 0;
+                        if (v00 >= threshold) cellType |= 1;
+                        if (v10 >= threshold) cellType |= 2;
+                        if (v11 >= threshold) cellType |= 4;
+                        if (v01 >= threshold) cellType |= 8;
+                        
+                        if (cellType === 0 || cellType === 15) continue;
+                        
+                        let x0 = i * 600 / cols;
+                        let y0 = j * 600 / rows;
+                        let dx = 600 / cols;
+                        let dy = 600 / rows;
+                        
+                        let ptT = edgePts(x0, y0, dx, 0, v00, v10, threshold);
+                        let ptR = edgePts(x0 + dx, y0, 0, dy, v10, v11, threshold);
+                        let ptB = edgePts(x0, y0 + dy, dx, 0, v01, v11, threshold);
+                        let ptL = edgePts(x0, y0, 0, dy, v00, v01, threshold);
+                        
+                        let lines = [];
+                        switch (cellType) {
+                            case 1: lines.push([ptL, ptT]); break;
+                            case 2: lines.push([ptT, ptR]); break;
+                            case 3: lines.push([ptL, ptR]); break;
+                            case 4: lines.push([ptR, ptB]); break;
+                            case 5: lines.push([ptL, ptT], [ptR, ptB]); break; 
+                            case 6: lines.push([ptT, ptB]); break;
+                            case 7: lines.push([ptL, ptB]); break;
+                            case 8: lines.push([ptL, ptB]); break;
+                            case 9: lines.push([ptT, ptB]); break;
+                            case 10: lines.push([ptT, ptR], [ptL, ptB]); break; 
+                            case 11: lines.push([ptR, ptB]); break;
+                            case 12: lines.push([ptL, ptR]); break;
+                            case 13: lines.push([ptT, ptR]); break;
+                            case 14: lines.push([ptL, ptT]); break;
+                        }
+                        for (let line of lines) {
+                            bgCtx.moveTo(line[0][0], line[0][1]);
+                            bgCtx.lineTo(line[1][0], line[1][1]);
+                        }
+                    }
+                }
+                bgCtx.stroke();
+            }
+            bgCached = true;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(backgroundCanvas, 0, 0);
+        
+        let optX = 0, optY = 0;
+        if (currentFunc === "rosenbrock") { optX = 1; optY = 1; }
+        ctx.fillStyle = "red"; ctx.font = "20px Arial"; ctx.fillText("★", px(optX) - 10, py(optY) + 7);
+        
+        ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(px(0), 0); ctx.lineTo(px(0), canvas.height);
+        ctx.moveTo(0, py(0)); ctx.lineTo(canvas.width, py(0)); ctx.stroke();
+        
+        if (trajectory.length > 1) {
+            ctx.strokeStyle = "rgba(0,0,0,0.6)"; 
+            ctx.setLineDash([4, 4]); ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(px(trajectory[0].x), py(trajectory[0].y));
+            for (let i = 1; i < trajectory.length; i++) ctx.lineTo(px(trajectory[i].x), py(trajectory[i].y));
+            ctx.stroke(); ctx.setLineDash([]);
+        }
+        if (trajectory.length > 0) for (let i = 0; i < trajectory.length; i++) drawMeanPoint(trajectory[i], 4.5);
+    }
+
+    function draw() {
+        drawBackground();
+        
+        function drawPath(traj, color) {
+            if (!traj || traj.length === 0) return;
+            
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = color; 
+            ctx.beginPath();
+            ctx.moveTo(px(traj[0].x), py(traj[0].y));
+            for (let i = 1; i < traj.length; i++) {
+                ctx.lineTo(px(traj[i].x), py(traj[i].y));
+            }
+            ctx.stroke();
+            
+            if (traj.length > 0) {
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(px(traj[traj.length-1].x), py(traj[traj.length-1].y), 4, 0, 2*Math.PI);
+                ctx.fill();
+            }
+        }
+
+        let showGD = document.getElementById("showGD") ? document.getElementById("showGD").checked : false;
+        let showBFGS = document.getElementById("showBFGS") ? document.getElementById("showBFGS").checked : false;
+
+        if (showGD) drawPath(gdTrajectory, "#ff00ff");
+        if (showBFGS) drawPath(bfgsTrajectory, "#00cccc");
+
+        if (step === 0) {
+            drawCovarianceEllipse(m, C, sigma, "rgba(0, 128, 0, 0.5)", true);
+            drawMeanPoint(m, 5);
+        } else if (step === 1) {
+            drawCovarianceEllipse(m, C, sigma, "green", true);
+            ctx.fillStyle = "gray";
+            for (let c of candidates) { ctx.beginPath(); ctx.arc(px(c.x), py(c.y), 4, 0, 2*Math.PI); ctx.fill(); }
+            drawMeanPoint(m, 5);
+        } else if (step === 2) {
+            drawCovarianceEllipse(m, C, sigma, "green", true);
+            ctx.fillStyle = "rgba(128, 128, 128, 0.4)";
+            for (let i = mu; i < candidates.length; i++) { ctx.beginPath(); ctx.arc(px(candidates[i].x), py(candidates[i].y), 4, 0, 2*Math.PI); ctx.fill(); }
+            
+            ctx.strokeStyle = "#FF8C00"; ctx.lineWidth = 1.5;
+            for (let i = 0; i < mu; i++) {
+                ctx.beginPath(); ctx.moveTo(px(candidates[i].x), py(candidates[i].y)); ctx.lineTo(px(m_new.x), py(m_new.y)); ctx.stroke();
+            }
+            
+            ctx.fillStyle = "blue";
+            for (let i = 0; i < mu; i++) { ctx.beginPath(); ctx.arc(px(candidates[i].x), py(candidates[i].y), 5, 0, 2*Math.PI); ctx.fill(); }
+            
+            drawMeanPoint(m, 5, 0.4); drawMeanPoint(m_new, 7); 
+        } else if (step === 3) {
+            drawCovarianceEllipse(m, C, sigma, "rgba(0, 128, 0, 0.3)", true); 
+            drawMeanPoint(m, 5, 0.4); drawMeanPoint(m_new, 7); 
+            drawPathVector(m_new, pc_new, "#9400D3", "p_c");
+        } else if (step === 4) {
+            drawCovarianceEllipse(m, C, sigma, "rgba(0, 128, 0, 0.3)", true); 
+            drawMeanPoint(m, 5, 0.4); 
+            drawCovarianceEllipse(m_new, C_new, sigma_new, "#FF8C00", false); 
+            drawMeanPoint(m_new, 7); 
+            drawPathVector(m_new, pc_new, "#9400D3", "p_c");
+        }
+    }
+
+    applyAndReset(); 
+</script>
+</body>
+</html>

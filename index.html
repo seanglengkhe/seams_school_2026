@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(μ, Lambda)-ES Interactive Visualization</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .container { display: flex; gap: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 1000px;}
+        .controls { display: flex; flex-direction: column; gap: 10px; width: 340px; }
+        canvas { background-color: #ffffff; border: 1px solid #ccc; border-radius: 5px; }
+        .input-group { display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
+        .input-group input { width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 3px; }
+        .input-group input.half { width: 45px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 5px; }
+        button { flex: 1; padding: 10px; font-size: 14px; font-weight: bold; color: white; background-color: #007bff; border: none; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        button:hover { background-color: #0056b3; }
+        button.auto { background-color: #28a745; }
+        button.auto:hover { background-color: #218838; }
+        button.reset { background-color: #dc3545; }
+        button.reset:hover { background-color: #c82333; }
+        .status { background: #e9ecef; padding: 15px; border-radius: 5px; font-size: 14px; line-height: 1.5; }
+        .status h2 { margin-top: 0; font-size: 18px; color: #333; margin-bottom: 10px;}
+        .note { font-size: 12px; color: #666; font-style: italic; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <canvas id="plotCanvas" width="600" height="600"></canvas>
+        
+        <div class="controls">
+            <div class="status">
+                <h2>System Parameters</h2>
+                
+                <strong>Axis Limits</strong>
+                <div class="input-group" style="margin-top: 5px;">
+                    <label>X Min / Max:</label>
+                    <div>
+                        <input type="number" id="xMinInput" value="-5.0" step="1.0" class="half">
+                        <input type="number" id="xMaxInput" value="50.0" step="1.0" class="half">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Y Min / Max:</label>
+                    <div>
+                        <input type="number" id="yMinInput" value="-5.0" step="1.0" class="half">
+                        <input type="number" id="yMaxInput" value="50.0" step="1.0" class="half">
+                    </div>
+                </div>
+                <hr style="border: 0.5px solid #ccc; margin: 10px 0;">
+                
+                <div class="input-group">
+                    <label>Start X (m_x):</label>
+                    <input type="number" id="startX" value="40.0" step="1.0">
+                </div>
+                <div class="input-group">
+                    <label>Start Y (m_y):</label>
+                    <input type="number" id="startY" value="40.0" step="1.0">
+                </div>
+                <hr style="border: 0.5px solid #ccc; margin: 10px 0;">
+                
+                <strong>Objective: f(x, y) = a·x² + b·y²</strong>
+                <div class="input-group" style="margin-top: 5px;">
+                    <label>Param a (X-axis):</label>
+                    <input type="number" id="paramA" value="1.0" step="0.5" min="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Param b (Y-axis):</label>
+                    <input type="number" id="paramB" value="5.0" step="0.5" min="0.1">
+                </div>
+                <hr style="border: 0.5px solid #ccc; margin: 10px 0;">
+                
+                <div class="input-group">
+                    <label>Candidates (&lambda;):</label>
+                    <input type="number" id="lambdaInput" value="12" step="1" min="2">
+                </div>
+                <div class="input-group">
+                    <label>Parents (&mu;):</label>
+                    <input type="number" id="muInput" value="3" step="1" min="1">
+                </div>
+                <div class="input-group">
+                    <label>Step-size (&sigma;):</label>
+                    <input type="number" id="sigmaInput" value="4.0" step="0.5" min="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Max Gen:</label>
+                    <input type="number" id="maxGen" value="20" step="1" min="1">
+                </div>
+            </div>
+
+            <button id="resetBtn" class="reset" onclick="applyAndReset()">Apply Parameters & Reset</button>
+            
+            <div class="btn-group">
+                <button id="nextBtn" onclick="nextStep()">Next Step ➔</button>
+                <button id="autoBtn" class="auto" onclick="toggleAutoRun()">Auto Run ▶</button>
+            </div>
+            <div class="btn-group">
+                <button id="skipBtn" style="background-color:#6f42c1;" onclick="skipToLastGeneration()">Skip to Last Generation ⏭</button>
+            </div>
+            
+            <div class="status" id="statusBox">
+                <h2 id="stepTitle">Ready</h2>
+                <div id="stepDesc">Adjust parameters above and click "Apply", or click "Next Step" to begin.</div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById("plotCanvas");
+    const ctx = canvas.getContext("2d");
+    const stepTitle = document.getElementById("stepTitle");
+    const stepDesc = document.getElementById("stepDesc");
+
+    // Dynamic Axis Bounds
+    let xMin = -5.0, xMax = 50.0, yMin = -5.0, yMax = 50.0;
+    
+    function px(x) { return (x - xMin) / (xMax - xMin) * canvas.width; }
+    function py(y) { return canvas.height - (y - yMin) / (yMax - yMin) * canvas.height; }
+    function scaleRadius(r) { return r / (xMax - xMin) * canvas.width; } 
+
+    function randn() {
+        let u = 0, v = 0;
+        while(u === 0) u = Math.random();
+        while(v === 0) v = Math.random();
+        return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    // State Variables
+    let a, b, lambda, mu, sigma, maxGenerations;
+    let m, m_new, gen, step, candidates, trajectory;
+    let autoInterval = null;
+
+    function f(x, y) {
+        return a * (x * x) + b * (y * y);
+    }
+
+    function applyAndReset() {
+        if (autoInterval) toggleAutoRun();
+
+        xMin = parseFloat(document.getElementById("xMinInput").value);
+        xMax = parseFloat(document.getElementById("xMaxInput").value);
+        yMin = parseFloat(document.getElementById("yMinInput").value);
+        yMax = parseFloat(document.getElementById("yMaxInput").value);
+
+        if (xMin >= xMax) { xMax = xMin + 10; document.getElementById("xMaxInput").value = xMax; }
+        if (yMin >= yMax) { yMax = yMin + 10; document.getElementById("yMaxInput").value = yMax; }
+
+        a = Math.max(0.1, parseFloat(document.getElementById("paramA").value));
+        b = Math.max(0.1, parseFloat(document.getElementById("paramB").value));
+        lambda = Math.max(2, parseInt(document.getElementById("lambdaInput").value));
+        mu = Math.max(1, parseInt(document.getElementById("muInput").value));
+        
+        if (mu > lambda) { 
+            mu = lambda; 
+            document.getElementById("muInput").value = mu; 
+        }
+
+        sigma = Math.max(0.1, parseFloat(document.getElementById("sigmaInput").value));
+        maxGenerations = Math.max(1, parseInt(document.getElementById("maxGen").value));
+        
+        let startX = parseFloat(document.getElementById("startX").value);
+        let startY = parseFloat(document.getElementById("startY").value);
+
+        m = {x: startX, y: startY};
+        m_new = null;
+        gen = 1;
+        step = 0;
+        candidates = [];
+        trajectory = [{...m}];
+        
+        updateUI("Ready", `Algorithm configured. Starting at m = (${m.x.toFixed(2)}, ${m.y.toFixed(2)}).`);
+        document.getElementById("nextBtn").disabled = false;
+        draw();
+    }
+
+    function toggleAutoRun() {
+        const btn = document.getElementById("autoBtn");
+        if (autoInterval) {
+            clearInterval(autoInterval);
+            autoInterval = null;
+            btn.innerText = "Auto Run ▶";
+            btn.style.backgroundColor = "#28a745";
+        } else {
+            if (gen > maxGenerations) applyAndReset();
+            btn.innerText = "Stop ⏸";
+            btn.style.backgroundColor = "#ffc107";
+            autoInterval = setInterval(() => {
+                if (gen > maxGenerations) {
+                    toggleAutoRun();
+                } else {
+                    nextStep();
+                }
+            }, 600);
+        }
+    }
+
+    function skipToLastGeneration() {
+        if (autoInterval) toggleAutoRun();
+
+        while (gen <= maxGenerations) {
+            nextStep();
+        }
+
+        updateUI("Finished", `Reached maximum generations (${maxGenerations}).`);
+        document.getElementById("nextBtn").disabled = true;
+        draw();
+    }
+
+    function nextStep() {
+        if (gen > maxGenerations) {
+            updateUI("Finished", `Reached maximum generations (${maxGenerations}).`);
+            document.getElementById("nextBtn").disabled = true;
+            if(autoInterval) toggleAutoRun();
+            return;
+        }
+
+        if (step === 0) {
+            updateUI("1. Current Mean m_n", `Algorithm is at m = (${m.x.toFixed(2)}, ${m.y.toFixed(2)}).`);
+            step++;
+        } else if (step === 1) {
+            candidates = [];
+            for (let i = 0; i < lambda; i++) {
+                let cx = m.x + sigma * randn();
+                let cy = m.y + sigma * randn();
+                candidates.push({ x: cx, y: cy, fit: f(cx, cy) });
+            }
+            updateUI("2. Sampling", `Generated ${lambda} candidates isotropically with \u03C3 = ${sigma.toFixed(2)}.`);
+            step++;
+        } else if (step === 2) {
+            candidates.sort((c1, c2) => c1.fit - c2.fit);
+            updateUI("3. Selection", `Evaluated and ranked. Selected the top \u03BC = ${mu} candidates (blue).`);
+            step++;
+        } else if (step === 3) {
+            let sumX = 0, sumY = 0;
+            for (let i = 0; i < mu; i++) {
+                sumX += candidates[i].x;
+                sumY += candidates[i].y;
+            }
+            m_new = { x: sumX / mu, y: sumY / mu };
+            updateUI("4. Recombination", `Calculated new center m_{n+1} (yellow) by averaging the ${mu} best candidates.`);
+            step++;
+        } else if (step === 4) {
+            trajectory.push({...m_new});
+            updateUI(`5. Update to m_${gen}`, `Moved center to m_{n+1}. Proceeding to Generation ${gen + 1}.`);
+            m = {...m_new};
+            gen++;
+            step = 0;
+        }
+        draw();
+    }
+
+    function updateUI(title, desc) {
+        let prefix = gen <= maxGenerations ? `Gen ${gen}: ` : "";
+        stepTitle.innerHTML = prefix + title;
+        stepDesc.innerHTML = desc;
+    }
+
+    // Helpers Vẽ Hình Học
+    function drawMeanPoint(pt, radius, alpha = 1.0) {
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = "#FFD700"; // Màu Vàng (Gold)
+        ctx.beginPath(); 
+        ctx.arc(px(pt.x), py(pt.y), radius, 0, 2*Math.PI); 
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "black"; // Viền đen để dễ nhìn
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawSigmaCircle(pt) {
+        ctx.strokeStyle = "green";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); 
+        ctx.arc(px(pt.x), py(pt.y), scaleRadius(sigma), 0, 2*Math.PI); 
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset nét đứt
+    }
+
+    function drawArrow(fromx, fromy, tox, toy) {
+        let headlen = 10; 
+        let dx = tox - fromx;
+        let dy = toy - fromy;
+        let angle = Math.atan2(dy, dx);
+        ctx.beginPath();
+        ctx.moveTo(fromx, fromy);
+        ctx.lineTo(tox, toy);
+        ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(tox, toy);
+        ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+    }
+
+    function drawBackground() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.strokeStyle = "rgba(0,0,0,0.1)";
+        ctx.lineWidth = 1;
+        
+        let maxL = Math.max(f(xMin, yMin), f(xMin, yMax), f(xMax, yMin), f(xMax, yMax));
+        let stepL = maxL / 30;
+        
+        for (let L = stepL; L <= maxL; L += stepL) {
+            let rx = Math.sqrt(L / a);
+            let ry = Math.sqrt(L / b);
+            
+            ctx.beginPath();
+            ctx.ellipse(px(0), py(0), scaleRadius(rx), scaleRadius(ry), 0, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = "red";
+        ctx.font = "20px Arial";
+        ctx.fillText("★", px(0) - 10, py(0) + 7);
+        
+        ctx.strokeStyle = "rgba(0,0,0,0.15)";
+        ctx.beginPath();
+        ctx.moveTo(px(0), 0); ctx.lineTo(px(0), canvas.height);
+        ctx.moveTo(0, py(0)); ctx.lineTo(canvas.width, py(0));
+        ctx.stroke();
+        
+        // Vẽ quỹ đạo (đường nét đứt)
+        if (trajectory.length > 1) {
+            ctx.strokeStyle = "rgba(0,0,0,0.5)";
+            ctx.setLineDash([4, 4]);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(px(trajectory[0].x), py(trajectory[0].y));
+            for (let i = 1; i < trajectory.length; i++) {
+                ctx.lineTo(px(trajectory[i].x), py(trajectory[i].y));
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // Vẽ các chấm tròn tâm (mean) của các thế hệ cũ bằng màu Vàng
+        if (trajectory.length > 0) {
+            for (let i = 0; i < trajectory.length; i++) {
+                drawMeanPoint(trajectory[i], 4.5);
+            }
+        }
+    }
+
+    function draw() {
+        drawBackground();
+        
+        if (step === 1) {
+            drawMeanPoint(m, 5);
+            
+        } else if (step === 2) {
+            drawSigmaCircle(m); // Giữ vòng tròn sigma
+            
+            ctx.fillStyle = "gray";
+            for (let c of candidates) {
+                ctx.beginPath(); ctx.arc(px(c.x), py(c.y), 4, 0, 2*Math.PI); ctx.fill();
+            }
+            drawMeanPoint(m, 5);
+            
+        } else if (step === 3) {
+            drawSigmaCircle(m); // Giữ vòng tròn sigma
+            
+            ctx.fillStyle = "rgba(128, 128, 128, 0.4)";
+            for (let i = mu; i < candidates.length; i++) {
+                ctx.beginPath(); ctx.arc(px(candidates[i].x), py(candidates[i].y), 4, 0, 2*Math.PI); ctx.fill();
+            }
+            ctx.fillStyle = "blue";
+            for (let i = 0; i < mu; i++) {
+                ctx.beginPath(); ctx.arc(px(candidates[i].x), py(candidates[i].y), 5, 0, 2*Math.PI); ctx.fill();
+            }
+            drawMeanPoint(m, 5);
+            
+        } else if (step === 4) {
+            drawSigmaCircle(m); // Giữ vòng tròn sigma
+            
+            ctx.fillStyle = "rgba(128, 128, 128, 0.4)";
+            for (let i = mu; i < candidates.length; i++) {
+                ctx.beginPath(); ctx.arc(px(candidates[i].x), py(candidates[i].y), 4, 0, 2*Math.PI); ctx.fill();
+            }
+            
+            // Vẽ đường nối từ mu candidates đến mean mới
+            ctx.strokeStyle = "#FF8C00";
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i < mu; i++) {
+                ctx.beginPath();
+                ctx.moveTo(px(candidates[i].x), py(candidates[i].y));
+                ctx.lineTo(px(m_new.x), py(m_new.y));
+                ctx.stroke();
+            }
+            
+            ctx.fillStyle = "blue";
+            for (let i = 0; i < mu; i++) {
+                ctx.beginPath(); ctx.arc(px(candidates[i].x), py(candidates[i].y), 5, 0, 2*Math.PI); ctx.fill();
+            }
+            
+            drawMeanPoint(m, 5, 0.6); // Old mean mờ đi một chút
+            drawMeanPoint(m_new, 7);  // New mean to hơn
+            
+        } else if (step === 0 && gen > 1) {
+            let oldM = trajectory[trajectory.length - 2];
+            drawSigmaCircle(oldM); // Giữ vòng tròn sigma của thế hệ cũ
+            drawMeanPoint(oldM, 5, 0.6);
+            
+            drawArrow(px(oldM.x), py(oldM.y), px(m.x), py(m.y));
+            
+            drawMeanPoint(m, 6);
+            
+        } else if (step === 0 && gen === 1) {
+            drawMeanPoint(m, 5);
+        }
+    }
+
+    applyAndReset();
+</script>
+
+</body>
+</html>
