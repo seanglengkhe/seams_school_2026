@@ -1,0 +1,16 @@
+*
+!.gitignore
+
+!*.tex
+!*.sty 
+!*.bib
+!*.png
+!*.ipynb
+!*.htlm
+!*.md
+
+
+!/code/
+!/code/*
+!/materials/
+!/materials/*
