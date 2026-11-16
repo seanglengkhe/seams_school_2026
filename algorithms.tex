@@ -25,25 +25,64 @@
 \end{frame}
 %------------------------------------------------------------------------
 
-
-%------------------------------------------------------------------------
-\begin{frame}
-  This is to compare different algorithms with CMA-ES.
-
-\end{frame}
-%------------------------------------------------------------------------
-
 \section{Introduction}
 
 %------------------------------------------------------------------------
 \begin{frame}
-  This is the algorithm called \emph{Simulated Annealing}.
+  This is to compare different algorithms with CMA-ES.
+  We will study different algorithms including stochastic searches, and compare its methods/ideas with CMS-ES.
+\begin{columns}
+    \begin{column}{.5\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[scale=0.2]{gradient_direction.png}
+        \caption{Gradient descent \cite{hansen2019evolve}.}
+      \end{figure}
+    \end{column}
+    \begin{column}{.5\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[scale=0.3]{cma-es.png}
+        \caption{CMA-ES process \cite{aguirre2026covariance}.}
+      \end{figure}
+    \end{column}
+  \end{columns}
+\end{frame}
+%------------------------------------------------------------------------
+
+\section{Simulated Annealing}
+
+%------------------------------------------------------------------------
+\begin{frame}
+  SA \cite{Bertsimas1993Simulated,Henderson2003Simulated} is an optimization techniwue for finding an optimal solution to an optimization problem.
+  The idea and name are coined by \emph{annealing the metallurgy}: you heat metal ans then cool it solwly.
+  While it's hot, the atoms move around freely.
+  As it cools solwly. they settle into a low-energy, well-ordered crystal structure.
+  If you cool it too fast, the atoms get stuck in a messy, higher-enrgy arrangement.
+\end{frame}
+%------------------------------------------------------------------------
+
+%------------------------------------------------------------------------
+\begin{frame}
+  
 \end{frame}
 %------------------------------------------------------------------------
 
 
+%-------------------------------------------------------------------------
+\begin{frame}
+  \bibliographystyle{unsrtnat}
+  \bibliography{ref.bib}
+\end{frame}
+%-------------------------------------------------------------------------
 
 
+%-------------------------------------------------------------------------
+\begin{frame}
+  \centering{\bf\Huge\orange{Thank you for your attentions!!!\\:-)}}
+  % \emoji{grinning-face}
+\end{frame}
+%-------------------------------------------------------------------------
 
 
 \end{document}
