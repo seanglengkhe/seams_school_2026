@@ -1,0 +1,23 @@
+\usepackage{fontawesome5}
+\setbeamerfont{title}{family=\fontfamily{lmss}\selectfont}       
+\definecolor{titleBlue}{HTML}{3F7FCC}  
+
+
+\setbeamertemplate{frametitle}{
+  \nopagebreak
+  \vspace*{0.07cm}
+  \begin{minipage}{\linewidth}
+    \begin{minipage}[b]{0.75\linewidth}
+      {\Large\textbf{\color{titleBlue}\insertframetitle}}
+    \end{minipage}%
+    \begin{minipage}[b]{0.25\linewidth}
+      % \raggedleft
+      % \mbox{\includegraphics[height=0.55cm]{jgsee.png} % change the picture
+      %   \includegraphics[height=0.8cm]{KMUTT.png}} % chnage the picture
+    \end{minipage}
+  \end{minipage}
+
+  \vspace*{-0.1cm} 
+  \noindent{\color{red}\rule{\linewidth}{1.2pt}}
+}
+

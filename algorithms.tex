@@ -2,7 +2,7 @@
 \usetheme{metropolis}
 \usepackage[american]{babel}
 
-\usepackage{macros}
+\usepackage{macros, mystyle}
 \graphicspath{{./images/}}
 \metroset{block=fill}
 \usepackage{hyperref}
@@ -53,12 +53,17 @@
 \section{Simulated Annealing}
 
 %------------------------------------------------------------------------
-\begin{frame}
-  SA \cite{Bertsimas1993Simulated,Henderson2003Simulated} is an optimization techniwue for finding an optimal solution to an optimization problem.
-  The idea and name are coined by \emph{annealing the metallurgy}: you heat metal ans then cool it solwly.
+\begin{frame}{Simulates Annealing}
+  SA \cite{Bertsimas1993Simulated,Henderson2003Simulated} is an optimization technique for finding an optimal solution to an optimization problem.
+  The idea and name are coined by \emph{annealing the metallurgy}: you heat metal and then cool it solwly.
   While it's hot, the atoms move around freely.
   As it cools solwly. they settle into a low-energy, well-ordered crystal structure.
-  If you cool it too fast, the atoms get stuck in a messy, higher-enrgy arrangement.
+  If you cool it too fast, the atoms get stuck in a messy, higher-energy arrangement.
+
+  The only nontrivial combinatorial problem for which SA has been rigorously analyzed is the maximum matchin problem.
+  It has been shown that for bounded-degree graphs with~$n$ nodes, the expected time until SA hits an optimal configuration is~$O(n^{2})$.
+  This is slower than other available algorithmss, but the result is encouraging.
+  On the other hand, no algorithm of the SA tyoe can solve the matching problem in polynomial expected time whrn the degree bound is relaxed \cite{Bertsimas1993Simulated}
 \end{frame}
 %------------------------------------------------------------------------
 
